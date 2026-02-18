@@ -1,5 +1,5 @@
 import { IChartAdapter } from './IChartAdapter';
-import { ThreeDAnalyticsAdapter } from './ThreeDAnalyticsAdapter';
+import { ThreeDAnalyticsAdapter } from './threedanalytics/ThreeDAnalyticsAdapter';
 
 /**
  * AdapterRegistry is the single source of truth for all registered platform adapters.
@@ -23,7 +23,7 @@ export class AdapterRegistry {
   register(adapter: IChartAdapter): void {
     if (this.adapters.has(adapter.platformId)) {
       throw new Error(
-        `Adapter with platformId "${adapter.platformId}" is already registered.`
+        `Adapter with platformId "${adapter.platformId}" is already registered.`,
       );
     }
     this.adapters.set(adapter.platformId, adapter);

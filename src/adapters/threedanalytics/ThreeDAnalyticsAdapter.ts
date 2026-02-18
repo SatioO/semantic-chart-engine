@@ -1,13 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { BaseAdapter } from './BaseAdapter';
+import { BaseAdapter } from '../BaseAdapter';
 import {
   Chart,
   ChartFilterOptions,
   ChartSummary,
   ChartType,
   PlatformInfo,
-} from '../types/chart.types';
+} from '../../types/chart.types';
 
 /**
  * ThreeDAnalyticsAdapter reads chart data from the local 3danalytics.json file.
@@ -28,8 +28,8 @@ export class ThreeDAnalyticsAdapter extends BaseAdapter {
   constructor(dataFilePath?: string) {
     super();
     this.dataFilePath =
-      dataFilePath ?? path.resolve(process.cwd(), '3danalytics.json');
-    this.metadataFilePath = path.resolve(process.cwd(), 'metadata.json');
+      dataFilePath ?? path.join(__dirname, '3danalytics.json');
+    this.metadataFilePath = path.join(__dirname, 'metadata.json');
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
