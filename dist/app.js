@@ -57,6 +57,7 @@ app.get('/', (_req, res) => {
         endpoints: {
             platforms: 'GET /api/platforms',
             platformById: 'GET /api/platforms/:platformId',
+            platformMetadata: 'GET /api/platforms/:platformId/metadata',
             charts: 'GET /api/platforms/:platformId/charts',
             chartsFiltered: 'GET /api/platforms/:platformId/charts?detailLevel=<0-3>&processStep=<0-4>&segment=<0-2|-1>&parentId=<id>&chartType=<type>',
             chartById: 'GET /api/platforms/:platformId/charts/:chartId',
@@ -64,8 +65,19 @@ app.get('/', (_req, res) => {
         },
         semanticFilters: {
             detailLevel: { 0: 'Overview', 1: 'Process', 2: 'Segment', 3: 'Detail' },
-            processStep: { 0: 'Marketing', 1: 'Leads', 2: 'Pipeline', 3: 'Revenue', 4: 'Retention' },
-            segment: { '-1': 'None (all segments)', 0: 'Startup', 1: 'SMB', 2: 'Enterprise' },
+            processStep: {
+                0: 'Marketing',
+                1: 'Leads',
+                2: 'Pipeline',
+                3: 'Revenue',
+                4: 'Retention',
+            },
+            segment: {
+                '-1': 'None (all segments)',
+                0: 'Startup',
+                1: 'SMB',
+                2: 'Enterprise',
+            },
             chartType: ['kpi', 'bar', 'funnel', 'revenue', 'churn'],
         },
         registeredPlatforms: AdapterRegistry_1.registry.listPlatformIds(),
@@ -101,6 +113,7 @@ app.listen(PORT, () => {
     console.log(`  GET http://localhost:${PORT}/`);
     console.log(`  GET http://localhost:${PORT}/api/platforms`);
     console.log(`  GET http://localhost:${PORT}/api/platforms/3danalytics`);
+    console.log(`  GET http://localhost:${PORT}/api/platforms/3danalytics/metadata`);
     console.log(`  GET http://localhost:${PORT}/api/platforms/3danalytics/charts`);
     console.log(`  GET http://localhost:${PORT}/api/platforms/3danalytics/charts/dashboard`);
     console.log(`  GET http://localhost:${PORT}/api/platforms/3danalytics/charts/dashboard/children`);

@@ -1,4 +1,9 @@
-import { Chart, ChartFilterOptions, ChartSummary, PlatformInfo } from '../types/chart.types';
+import {
+  Chart,
+  ChartFilterOptions,
+  ChartSummary,
+  PlatformInfo,
+} from '../types/chart.types';
 
 /**
  * IChartAdapter defines the contract that every platform adapter must implement.
@@ -27,4 +32,7 @@ export interface IChartAdapter {
 
   /** Returns the direct children of a given chart in the hierarchy */
   getChildren(chartId: string): Promise<Chart[]>;
+
+  /** Returns platform-specific metadata if available */
+  getMetadata?(): Promise<any>;
 }

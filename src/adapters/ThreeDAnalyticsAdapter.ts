@@ -22,12 +22,14 @@ export class ThreeDAnalyticsAdapter extends BaseAdapter {
   readonly platformId = '3danalytics';
 
   private readonly dataFilePath: string;
+  private readonly metadataFilePath: string;
   private cachedCharts: Chart[] | null = null;
 
   constructor(dataFilePath?: string) {
     super();
     this.dataFilePath =
       dataFilePath ?? path.resolve(process.cwd(), '3danalytics.json');
+    this.metadataFilePath = path.resolve(process.cwd(), 'metadata.json');
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
@@ -39,7 +41,7 @@ export class ThreeDAnalyticsAdapter extends BaseAdapter {
 
     if (!fs.existsSync(this.dataFilePath)) {
       throw new Error(
-        `3DAnalytics data file not found at: ${this.dataFilePath}`
+        `3DAnalytics data file not found at: ${this.dataFilePath}`,
       );
     }
 
@@ -49,16 +51,40 @@ export class ThreeDAnalyticsAdapter extends BaseAdapter {
   }
 
   private toSummary(chart: Chart): ChartSummary {
-    const { id, title, chartType, size, semantic, processLabel, parentId, segmentLabel } = chart;
-    return { id, title, chartType, size, semantic, processLabel, parentId, segmentLabel };
+    const {
+      id,
+      title,
+      chartType,
+      size,
+      semantic,
+      processLabel,
+      parentId,
+      segmentLabel,
+    } = chart;
+    return {
+      id,
+      title,
+      chartType,
+      size,
+      semantic,
+      processLabel,
+      parentId,
+      segmentLabel,
+    };
   }
 
   private applyFilters(charts: Chart[], filters: ChartFilterOptions): Chart[] {
     return charts.filter((c) => {
-      if (filters.detailLevel !== undefined && c.semantic.detailLevel !== filters.detailLevel) {
+      if (
+        filters.detailLevel !== undefined &&
+        c.semantic.detailLevel !== filters.detailLevel
+      ) {
         return false;
       }
-      if (filters.processStep !== undefined && c.semantic.processStep !== filters.processStep) {
+      if (
+        filters.processStep !== undefined &&
+        c.semantic.processStep !== filters.processStep
+      ) {
         return false;
       }
       if (filters.segment !== undefined) {
@@ -70,7 +96,10 @@ export class ThreeDAnalyticsAdapter extends BaseAdapter {
       if (filters.parentId !== undefined && c.parentId !== filters.parentId) {
         return false;
       }
-      if (filters.chartType !== undefined && c.chartType !== filters.chartType) {
+      if (
+        filters.chartType !== undefined &&
+        c.chartType !== filters.chartType
+      ) {
         return false;
       }
       return true;
@@ -111,5 +140,13 @@ export class ThreeDAnalyticsAdapter extends BaseAdapter {
   async listChartTypes(): Promise<ChartType[]> {
     const charts = this.loadCharts();
     return [...new Set(charts.map((c) => c.chartType))];
+  }
+
+  async getMetadata(): Promise<any> {
+    if (!fs.existsSync(this.metadataFilePath)) {
+      return null;
+    }
+    const raw = fs.readFileSync(this.metadataFilePath, 'utf-8');
+    return JSON.parse(raw);
   }
 }

@@ -21,6 +21,15 @@ class ChartService {
             return null;
         return adapter.getPlatformInfo();
     }
+    async getPlatformMetadata(platformId) {
+        const adapter = this.registry.get(platformId);
+        if (!adapter)
+            return null;
+        if (adapter.getMetadata) {
+            return adapter.getMetadata();
+        }
+        return null;
+    }
     // ── Chart listing (summaries) ────────────────────────────────────────────
     /**
      * Returns chart summaries for the given platform.

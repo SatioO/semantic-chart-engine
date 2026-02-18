@@ -1,0 +1,128 @@
+[
+  {
+    "id": "dashboard",
+    "api": "/platforms/3danalytics/charts/dashboard"
+  },
+  {
+    "id": "marketing",
+    "api": "/platforms/3danalytics/charts/marketing"
+  },
+  {
+    "id": "leads",
+    "api": "/platforms/3danalytics/charts/leads"
+  },
+  {
+    "id": "pipeline",
+    "api": "/platforms/3danalytics/charts/pipeline"
+  },
+  {
+    "id": "revenue",
+    "api": "/platforms/3danalytics/charts/revenue"
+  },
+  {
+    "id": "retention",
+    "api": "/platforms/3danalytics/charts/retention"
+  },
+
+  {
+    "id": "marketing-startup",
+    "api": "/platforms/3danalytics/charts/marketing-startup"
+  },
+  {
+    "id": "leads-startup",
+    "api": "/platforms/3danalytics/charts/leads-startup"
+  },
+  {
+    "id": "pipeline-startup",
+    "api": "/platforms/3danalytics/charts/pipeline-startup"
+  },
+  {
+    "id": "revenue-startup",
+    "api": "/platforms/3danalytics/charts/revenue-startup"
+  },
+  {
+    "id": "retention-startup",
+    "api": "/platforms/3danalytics/charts/retention-startup"
+  },
+
+  {
+    "id": "marketing-smb",
+    "api": "/platforms/3danalytics/charts/marketing-smb"
+  },
+  {
+    "id": "leads-smb",
+    "api": "/platforms/3danalytics/charts/leads-smb"
+  },
+  {
+    "id": "pipeline-smb",
+    "api": "/platforms/3danalytics/charts/pipeline-smb"
+  },
+  {
+    "id": "revenue-smb",
+    "api": "/platforms/3danalytics/charts/revenue-smb"
+  },
+  {
+    "id": "retention-smb",
+    "api": "/platforms/3danalytics/charts/retention-smb"
+  },
+
+  {
+    "id": "marketing-enterprise",
+    "api": "/platforms/3danalytics/charts/marketing-enterprise"
+  },
+  {
+    "id": "leads-enterprise",
+    "api": "/platforms/3danalytics/charts/leads-enterprise"
+  },
+  {
+    "id": "pipeline-enterprise",
+    "api": "/platforms/3danalytics/charts/pipeline-enterprise"
+  },
+  {
+    "id": "revenue-enterprise",
+    "api": "/platforms/3danalytics/charts/revenue-enterprise"
+  },
+  {
+    "id": "retention-enterprise",
+    "api": "/platforms/3danalytics/charts/retention-enterprise"
+  },
+
+  {
+    "id": "leads-startup-source",
+    "api": "/platforms/3danalytics/charts/leads-startup-source"
+  },
+  {
+    "id": "leads-smb-source",
+    "api": "/platforms/3danalytics/charts/leads-smb-source"
+  },
+  {
+    "id": "leads-enterprise-source",
+    "api": "/platforms/3danalytics/charts/leads-enterprise-source"
+  },
+
+  {
+    "id": "pipeline-startup-stage",
+    "api": "/platforms/3danalytics/charts/pipeline-startup-stage"
+  },
+  {
+    "id": "pipeline-smb-stage",
+    "api": "/platforms/3danalytics/charts/pipeline-smb-stage"
+  },
+  {
+    "id": "pipeline-enterprise-stage",
+    "api": "/platforms/3danalytics/charts/pipeline-enterprise-stage"
+  },
+
+  {
+    "id": "revenue-startup-account",
+    "api": "/platforms/3danalytics/charts/revenue-startup-account"
+  },
+  {
+    "id": "revenue-smb-account",
+    "api": "/platforms/3danalytics/charts/revenue-smb-account"
+  },
+  {
+    "id": "revenue-enterprise-account",
+    "api": "/platforms/3danalytics/charts/revenue-enterprise-account"
+  }
+]

@@ -53,6 +53,7 @@ class ThreeDAnalyticsAdapter extends BaseAdapter_1.BaseAdapter {
         this.cachedCharts = null;
         this.dataFilePath =
             dataFilePath ?? path.resolve(process.cwd(), '3danalytics.json');
+        this.metadataFilePath = path.resolve(process.cwd(), 'metadata.json');
     }
     // ── Private helpers ────────────────────────────────────────────────────────
     loadCharts() {
@@ -67,15 +68,26 @@ class ThreeDAnalyticsAdapter extends BaseAdapter_1.BaseAdapter {
         return this.cachedCharts;
     }
     toSummary(chart) {
-        const { id, title, chartType, size, semantic, processLabel, parentId, segmentLabel } = chart;
-        return { id, title, chartType, size, semantic, processLabel, parentId, segmentLabel };
+        const { id, title, chartType, size, semantic, processLabel, parentId, segmentLabel, } = chart;
+        return {
+            id,
+            title,
+            chartType,
+            size,
+            semantic,
+            processLabel,
+            parentId,
+            segmentLabel,
+        };
     }
     applyFilters(charts, filters) {
         return charts.filter((c) => {
-            if (filters.detailLevel !== undefined && c.semantic.detailLevel !== filters.detailLevel) {
+            if (filters.detailLevel !== undefined &&
+                c.semantic.detailLevel !== filters.detailLevel) {
                 return false;
             }
-            if (filters.processStep !== undefined && c.semantic.processStep !== filters.processStep) {
+            if (filters.processStep !== undefined &&
+                c.semantic.processStep !== filters.processStep) {
                 return false;
             }
             if (filters.segment !== undefined) {
@@ -89,7 +101,8 @@ class ThreeDAnalyticsAdapter extends BaseAdapter_1.BaseAdapter {
             if (filters.parentId !== undefined && c.parentId !== filters.parentId) {
                 return false;
             }
-            if (filters.chartType !== undefined && c.chartType !== filters.chartType) {
+            if (filters.chartType !== undefined &&
+                c.chartType !== filters.chartType) {
                 return false;
             }
             return true;
@@ -123,6 +136,13 @@ class ThreeDAnalyticsAdapter extends BaseAdapter_1.BaseAdapter {
     async listChartTypes() {
         const charts = this.loadCharts();
         return [...new Set(charts.map((c) => c.chartType))];
+    }
+    async getMetadata() {
+        if (!fs.existsSync(this.metadataFilePath)) {
+            return null;
+        }
+        const raw = fs.readFileSync(this.metadataFilePath, 'utf-8');
+        return JSON.parse(raw);
     }
 }
 exports.ThreeDAnalyticsAdapter = ThreeDAnalyticsAdapter;

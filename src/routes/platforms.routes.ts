@@ -95,5 +95,52 @@ export function createPlatformsRouter(chartService: ChartService): Router {
     res.json(response);
   });
 
+  /**
+   * @swagger
+   * /api/platforms/{platformId}/metadata:
+   *   get:
+   *     summary: Get metadata for a single platform by ID
+   *     description: Returns additional metadata for the requested platform adapter if available.
+   *     tags: [Platforms]
+   *     parameters:
+   *       - in: path
+   *         name: platformId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           example: 3danalytics
+   *         description: The platform adapter identifier
+   *     responses:
+   *       200:
+   *         description: Platform metadata
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               additionalProperties: true
+   *       404:
+   *         description: Platform not found or no metadata available
+   */
+  router.get('/:platformId/metadata', async (req: Request, res: Response) => {
+    const { platformId } = req.params;
+    const metadata = await chartService.getPlatformMetadata(platformId);
+
+    if (!metadata) {
+      res.status(404).json({
+        success: false,
+        error: `Metadata for platform "${platformId}" not found.`,
+        statusCode: 404,
+      });
+      return;
+    }
+
+    const response: ApiResponse<any> = {
+      success: true,
+      platform: platformId,
+      data: metadata,
+    };
+    res.json(response);
+  });
+
   return router;
 }

@@ -10,7 +10,7 @@ import { createChartsRouter } from './routes/charts.routes';
 import { swaggerSpec } from './swagger';
 
 const app: Application = express();
-const PORT = process.env.PORT ?? 3001;
+const PORT = process.env.PORT ?? 3000;
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors());
@@ -64,6 +64,7 @@ app.get('/', (_req: Request, res: Response) => {
     endpoints: {
       platforms: 'GET /api/platforms',
       platformById: 'GET /api/platforms/:platformId',
+      platformMetadata: 'GET /api/platforms/:platformId/metadata',
       charts: 'GET /api/platforms/:platformId/charts',
       chartsFiltered:
         'GET /api/platforms/:platformId/charts?detailLevel=<0-3>&processStep=<0-4>&segment=<0-2|-1>&parentId=<id>&chartType=<type>',
@@ -124,6 +125,9 @@ app.listen(PORT, () => {
   console.log(`  GET http://localhost:${PORT}/`);
   console.log(`  GET http://localhost:${PORT}/api/platforms`);
   console.log(`  GET http://localhost:${PORT}/api/platforms/3danalytics`);
+  console.log(
+    `  GET http://localhost:${PORT}/api/platforms/3danalytics/metadata`,
+  );
   console.log(
     `  GET http://localhost:${PORT}/api/platforms/3danalytics/charts`,
   );

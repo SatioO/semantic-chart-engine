@@ -27,6 +27,15 @@ export class ChartService {
     return adapter.getPlatformInfo();
   }
 
+  async getPlatformMetadata(platformId: string): Promise<any | null> {
+    const adapter = this.registry.get(platformId);
+    if (!adapter) return null;
+    if (adapter.getMetadata) {
+      return adapter.getMetadata();
+    }
+    return null;
+  }
+
   // ── Chart listing (summaries) ────────────────────────────────────────────
 
   /**
@@ -36,7 +45,7 @@ export class ChartService {
    */
   async listCharts(
     platformId: string,
-    filters?: ChartFilterOptions
+    filters?: ChartFilterOptions,
   ): Promise<ChartSummary[] | null> {
     const adapter = this.registry.get(platformId);
     if (!adapter) return null;
@@ -63,7 +72,7 @@ export class ChartService {
    */
   async getChildren(
     platformId: string,
-    chartId: string
+    chartId: string,
   ): Promise<Chart[] | null> {
     const adapter = this.registry.get(platformId);
     if (!adapter) return null;

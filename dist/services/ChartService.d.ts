@@ -11,6 +11,7 @@ export declare class ChartService {
     constructor(registry: AdapterRegistry);
     listPlatforms(): Promise<PlatformInfo[]>;
     getPlatformInfo(platformId: string): Promise<PlatformInfo | null>;
+    getPlatformMetadata(platformId: string): Promise<any | null>;
     /**
      * Returns chart summaries for the given platform.
      * Returns null if the platform is not registered.

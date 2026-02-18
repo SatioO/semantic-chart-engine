@@ -12,6 +12,7 @@ import { Chart, ChartFilterOptions, ChartSummary, ChartType, PlatformInfo } from
 export declare class ThreeDAnalyticsAdapter extends BaseAdapter {
     readonly platformId = "3danalytics";
     private readonly dataFilePath;
+    private readonly metadataFilePath;
     private cachedCharts;
     constructor(dataFilePath?: string);
     private loadCharts;
@@ -24,5 +25,6 @@ export declare class ThreeDAnalyticsAdapter extends BaseAdapter {
     getChildren(chartId: string): Promise<Chart[]>;
     /** Convenience: return all distinct chartTypes present in the dataset */
     listChartTypes(): Promise<ChartType[]>;
+    getMetadata(): Promise<any>;
 }
 //# sourceMappingURL=ThreeDAnalyticsAdapter.d.ts.map

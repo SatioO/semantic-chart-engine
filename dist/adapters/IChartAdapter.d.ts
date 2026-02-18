@@ -22,5 +22,7 @@ export interface IChartAdapter {
     getChartById(chartId: string): Promise<Chart | null>;
     /** Returns the direct children of a given chart in the hierarchy */
     getChildren(chartId: string): Promise<Chart[]>;
+    /** Returns platform-specific metadata if available */
+    getMetadata?(): Promise<any>;
 }
 //# sourceMappingURL=IChartAdapter.d.ts.map
