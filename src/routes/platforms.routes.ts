@@ -368,9 +368,17 @@ export function createPlatformsRouter(
       // Filter out any failed fetches (optional - you can keep them to show errors)
       const successfulCharts = chartsWithData.filter((c) => c.success);
 
+      // Log successful and failed chart IDs for debugging
+      const failedCharts = chartsWithData.filter((c) => !c.success);
       console.log(
         `[UserQuery] Successfully fetched ${successfulCharts.length}/${dataSourceSelection.relevantMetadata.length} charts`,
       );
+      if (failedCharts.length > 0) {
+        console.log(
+          '[UserQuery] Failed to fetch charts:',
+          failedCharts.map((c) => c.id),
+        );
+      }
 
       // 4. Use AI to orchestrate an intelligent visualization layout
       console.log('[UserQuery] Orchestrating visualization layout with AI...');
@@ -402,6 +410,8 @@ export function createPlatformsRouter(
             successful: successfulCharts.length,
             failed: chartsWithData.length - successfulCharts.length,
             visualizationsGenerated: orchestration.data.length,
+            selectedIds: chartsWithData.map((c) => c.id),
+            failedIds: failedCharts.map((c) => c.id),
           },
         },
       });

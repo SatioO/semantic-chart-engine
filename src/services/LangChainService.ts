@@ -218,11 +218,21 @@ export class LangChainService implements ILangChainService {
     ids: (string | DataSourceMetadata)[],
     metadata: DataSourceMetadata[],
   ): DataSourceMetadata[] {
+    console.log('[LangChain] AI returned relevantIds:', JSON.stringify(ids));
+
     return ids
       .map((item) => {
-        // If it's already an object with id and api, return it
+        // If it's already an object with id and api, validate it exists in metadata
         if (typeof item === 'object' && 'id' in item && 'api' in item) {
-          return item;
+          // Verify the ID exists in metadata
+          const found = metadata.find((m) => m.id === item.id);
+          if (!found) {
+            console.warn(
+              `[LangChain] AI returned ID "${item.id}" not found in metadata`,
+            );
+            return { id: item.id, api: '' };
+          }
+          return found; // Return the actual metadata object to ensure correct api
         }
 
         // If it's a string, find the matching metadata object
@@ -635,13 +645,40 @@ Only chart data contracts defined above.
 
 ⸻
 
+DATA INTEGRITY RULE (CRITICAL)
+
+⚠️ YOU MUST USE ONLY REAL DATA FROM THE PROVIDED CHARTS ⚠️
+
+ALLOWED:
+✓ Use exact values from the provided chart data
+✓ Perform calculations on real data (sum, average, percentage, growth rate, etc.)
+✓ Merge or group real data from multiple charts
+✓ Transform data format (e.g., convert numbers to formatted strings for KPIs)
+✓ Filter or aggregate real data
+✓ Create derived metrics from real values
+
+FORBIDDEN:
+✗ DO NOT invent, hallucinate, or make up ANY numbers
+✗ DO NOT create fictional data points
+✗ DO NOT estimate or guess values
+✗ DO NOT generate random or placeholder numbers
+✗ DO NOT use example values from this prompt
+
+VALIDATION:
+- Every numeric value in your output MUST be traceable to the input chart data
+- If you calculate or transform data, the source values MUST exist in the provided charts
+- If data is not available for a visualization, omit that visualization entirely
+
+⸻
+
 FINAL CONSTRAINT
 
-The JSON output must satisfy BOTH:
+The JSON output must satisfy ALL THREE:
 	1.	Semantic coordinate system
 	2.	Chart data contracts
+	3.	Data integrity (only real data, no hallucinations)
 
-If either is violated, the output is invalid.
+If any constraint is violated, the output is invalid.
 
 ----
 
@@ -837,13 +874,13 @@ No extra text.`;
   private buildUserVisualizationPrompt(query: string, charts: any[]): string {
     const available_data = charts
       .map((c, idx) => {
-        const dataPreview = c.chart?.data
-          ? JSON.stringify(c.chart.data.slice(0, 3))
+        const fullData = c.chart?.data
+          ? JSON.stringify(c.chart.data)
           : 'No data';
         return `${idx + 1}. ID: ${c.id}
    Chart Type: ${c.chart?.chartType || 'unknown'}
    Title: ${c.chart?.title || 'Untitled'}
-   Data Preview: ${dataPreview}`;
+   Full Data: ${fullData}`;
       })
       .join('\n\n');
 
@@ -853,7 +890,10 @@ ${query}
 Available Structured Data:
 ${available_data}
 
-Generate the visualization JSON array following all system rules.
+CRITICAL REMINDER:
+Use ONLY the actual data shown above. You may perform calculations, aggregations, or transformations on this real data, but DO NOT invent any numbers. Every value in your output must be traceable to the data provided above.
+
+Generate the visualization JSON object following all system rules.
 
 Return only valid JSON.`;
   }
