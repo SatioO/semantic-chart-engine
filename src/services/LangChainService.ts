@@ -120,7 +120,7 @@ export class LangChainService implements ILangChainService {
 
   /**
    * Orchestrates visualization layout with AI-driven insights and structure.
-   * The prompt returns a JSON array directly - AI generates complete visualizations with data.
+   * The AI returns a JSON object with data (visualizations), narrative, and keyInsights.
    */
   async orchestrateVisualization(
     query: string,
@@ -142,8 +142,8 @@ export class LangChainService implements ILangChainService {
     try {
       const parsed = JSON.parse(content);
 
-      // The prompt returns an array directly, not an object with 'data' property
-      // Handle both cases: array or object with data property
+      // The prompt expects an object with data, narrative, keyInsights
+      // Handle both cases for backward compatibility: array or object with data property
       const visualizations = Array.isArray(parsed) ? parsed : (parsed.data || []);
 
       console.log(
@@ -495,38 +495,46 @@ FEW-SHOT EXAMPLES
 Example 1
 
 User Query:
-“Show overall revenue performance and breakdown by segment.”
+"Show overall revenue performance and breakdown by segment."
 
 Expected Output:
 
-[
 {
-“id”: “overview”,
-“title”: “Revenue Overview”,
-“chartType”: “kpi”,
-“size”: { “width”: 4, “height”: 2.5 },
-“data”: [
-{ “label”: “Total Revenue”, “value”: 1250000, “unit”: “$”, “trend”: 8.4, “trendDirection”: “up” },
-{ “label”: “Growth Rate”, “value”: 12.5, “unit”: “%”, “trend”: 1.2, “trendDirection”: “up” }
+"data": [
+{
+"id": "overview",
+"title": "Revenue Overview",
+"chartType": "kpi",
+"size": { "width": 4, "height": 2.5 },
+"data": [
+{ "label": "Total Revenue", "value": 1250000, "unit": "$", "trend": 8.4, "trendDirection": "up" },
+{ "label": "Growth Rate", "value": 12.5, "unit": "%", "trend": 1.2, "trendDirection": "up" }
 ],
-“semantic”: { “processStep”: 0, “segment”: null, “detailLevel”: 0 },
-“processLabel”: “Revenue”
+"semantic": { "processStep": 0, "segment": null, "detailLevel": 0 },
+"processLabel": "Revenue"
 },
 {
-“id”: “revenue-segment”,
-“title”: “Revenue by Segment”,
-“chartType”: “bar”,
-“size”: { “width”: 3, “height”: 2 },
-“data”: [
-{ “product”: “Startup”, “revenue”: 350000, “growth”: 15 },
-{ “product”: “SMB”, “revenue”: 420000, “growth”: 10 },
-{ “product”: “Enterprise”, “revenue”: 480000, “growth”: 6 }
+"id": "revenue-segment",
+"title": "Revenue by Segment",
+"chartType": "bar",
+"size": { "width": 3, "height": 2 },
+"data": [
+{ "product": "Startup", "revenue": 350000, "growth": 15 },
+{ "product": "SMB", "revenue": 420000, "growth": 10 },
+{ "product": "Enterprise", "revenue": 480000, "growth": 6 }
 ],
-“semantic”: { “processStep”: 0, “segment”: null, “detailLevel”: 1 },
-“parentId”: “overview”,
-“processLabel”: “Revenue”
+"semantic": { "processStep": 0, "segment": null, "detailLevel": 1 },
+"parentId": "overview",
+"processLabel": "Revenue"
 }
+],
+"narrative": "Revenue shows strong overall performance at $1.25M with 8.4% growth. Enterprise leads in absolute revenue while Startup shows the highest growth rate at 15%.",
+"keyInsights": [
+"Total revenue reached $1.25M with 8.4% YoY growth",
+"Startup segment growing fastest at 15%, presenting expansion opportunity",
+"Enterprise contributes largest share ($480K) but slower growth at 6%"
 ]
+}
 
 ⸻
 
@@ -622,9 +630,28 @@ Expected Output:
 
 ⸻
 
+OUTPUT FORMAT
+
+Return a JSON object with this structure:
+{
+  "data": [ /* array of visualization panels */ ],
+  "narrative": "A 2-3 sentence story explaining what the data shows and key takeaways",
+  "keyInsights": [
+    "Specific insight #1 with numbers/percentages",
+    "Specific insight #2 with actionable recommendation",
+    "Specific insight #3 highlighting trends or anomalies"
+  ]
+}
+
+INSIGHT GUIDELINES:
+- Each insight should be specific and data-driven (include actual numbers)
+- Highlight trends, comparisons, anomalies, or recommendations
+- Limit to 3-5 key insights
+- Make insights actionable where possible
+
 FINAL INSTRUCTION
 
-Return ONLY the JSON array.
+Return ONLY the JSON object.
 No markdown.
 No explanation.
 No extra text.`;
