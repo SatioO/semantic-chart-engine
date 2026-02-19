@@ -1,867 +1,151 @@
 [
   {
-    "id": "dashboard",
-    "title": "SaaS Dashboard",
+    "id": "pipeline-summary",
+    "title": "Pipeline Value Overview",
     "chartType": "kpi",
-    "size": { "width": 4, "height": 2.5 },
+    "size": {
+      "width": 4,
+      "height": 2.5
+    },
     "data": [
       {
-        "label": "Marketing Spend",
-        "value": 285000,
-        "unit": "$",
-        "trend": 15.2,
-        "trendDirection": "up"
+        "label": "Total Pipeline Value",
+        "value": "$1.5M",
+        "trend": {
+          "value": "+10%",
+          "direction": "up",
+          "color": "green"
+        }
       },
       {
-        "label": "Leads Generated",
-        "value": 8200,
-        "unit": "",
-        "trend": 12.8,
-        "trendDirection": "up"
+        "label": "Total Deals Lost",
+        "value": "150",
+        "trend": {
+          "value": "-5%",
+          "direction": "down",
+          "color": "red"
+        }
       },
       {
-        "label": "Pipeline Values--",
-        "value": 1450000,
-        "unit": "$",
-        "trend": 8.7,
-        "trendDirection": "up"
-      },
-      {
-        "label": "Closed Revenue",
-        "value": 620000,
-        "unit": "$",
-        "trend": 5.4,
-        "trendDirection": "up"
-      },
-      {
-        "label": "Retention Rate",
-        "value": 95.5,
-        "unit": "%",
-        "trend": -0.3,
-        "trendDirection": "down"
+        "label": "Lost Deal Value",
+        "value": "$300k",
+        "trend": {
+          "value": "-3%",
+          "direction": "down",
+          "color": "red"
+        }
       }
     ],
-    "semantic": { "processStep": 2, "segment": null, "detailLevel": 0 },
-    "processLabel": "Overview"
+    "semantic": {
+      "processStep": 0,
+      "segment": null,
+      "detailLevel": 0
+    },
+    "processLabel": "Pipeline Analysis"
   },
   {
-    "id": "marketing",
-    "title": "Marketing Spend",
+    "id": "lost-deals-segment",
+    "title": "Lost Deals by Segment",
     "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Startup", "revenue": 138368, "growth": 18.8 },
-      { "product": "SMB", "revenue": 280988, "growth": 21.4 },
-      { "product": "Enterprise", "revenue": 572175, "growth": 20.5 }
-    ],
-    "semantic": { "processStep": 0, "segment": null, "detailLevel": 1 },
-    "parentId": "dashboard",
-    "processLabel": "Marketing"
-  },
-  {
-    "id": "leads",
-    "title": "Leads Generated",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Startup", "revenue": 26000, "growth": 9 },
-      { "product": "SMB", "revenue": 18200, "growth": 19.9 },
-      { "product": "Enterprise", "revenue": 7800, "growth": 19.9 }
-    ],
-    "semantic": { "processStep": 1, "segment": null, "detailLevel": 1 },
-    "parentId": "dashboard",
-    "processLabel": "Leads"
-  },
-  {
-    "id": "pipeline",
-    "title": "Pipeline Value",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Startup", "revenue": 56873, "growth": 133.1 },
-      { "product": "SMB", "revenue": 85948, "growth": 130.2 },
-      { "product": "Enterprise", "revenue": 141801, "growth": 134.4 }
-    ],
-    "semantic": { "processStep": 2, "segment": null, "detailLevel": 1 },
-    "parentId": "dashboard",
-    "processLabel": "Pipeline"
-  },
-  {
-    "id": "revenue",
-    "title": "Closed Revenue",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Startup", "revenue": 71259, "growth": 9.8 },
-      { "product": "SMB", "revenue": 99674, "growth": 8.3 },
-      { "product": "Enterprise", "revenue": 114070, "growth": 7.9 }
-    ],
-    "semantic": { "processStep": 3, "segment": null, "detailLevel": 1 },
-    "parentId": "dashboard",
-    "processLabel": "Revenue"
-  },
-  {
-    "id": "retention",
-    "title": "Retention & Churn",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Startup", "revenue": 5.55, "growth": -3.2 },
-      { "product": "SMB", "revenue": 3.74, "growth": -1.5 },
-      { "product": "Enterprise", "revenue": 2.8, "growth": -0.2 }
-    ],
-    "semantic": { "processStep": 4, "segment": null, "detailLevel": 1 },
-    "parentId": "dashboard",
-    "processLabel": "Retention"
-  },
-  {
-    "id": "marketing-startup",
-    "title": "Startup Marketing",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Starter", "revenue": 18664, "growth": 12.9 },
-      { "product": "Professional", "revenue": 46044, "growth": 20.2 },
-      { "product": "Enterprise", "revenue": 60570, "growth": 9.6 },
-      { "product": "Add-ons", "revenue": 13090, "growth": 32.4 }
-    ],
-    "semantic": { "processStep": 0, "segment": 0, "detailLevel": 2 },
-    "parentId": "marketing",
-    "segmentLabel": "Startup",
-    "processLabel": "Marketing"
-  },
-  {
-    "id": "leads-startup",
-    "title": "Startup Leads",
-    "chartType": "funnel",
-    "size": { "width": 2.5, "height": 2.5 },
-    "data": [
-      { "stage": "Website Visitors", "count": 26000, "conversionRate": 100 },
-      { "stage": "Sign-ups", "count": 4100, "conversionRate": 15.8 },
-      { "stage": "Trial Started", "count": 2050, "conversionRate": 50 },
-      { "stage": "Paid Conversion", "count": 615, "conversionRate": 30 },
-      { "stage": "Enterprise", "count": 93, "conversionRate": 15 }
-    ],
-    "semantic": { "processStep": 1, "segment": 0, "detailLevel": 2 },
-    "parentId": "leads",
-    "segmentLabel": "Startup",
-    "processLabel": "Leads"
-  },
-  {
-    "id": "pipeline-startup",
-    "title": "Startup Pipeline",
-    "chartType": "revenue",
-    "size": { "width": 3, "height": 2 },
+    "size": {
+      "width": 3,
+      "height": 2
+    },
     "data": [
       {
-        "month": "Jan",
-        "mrr": 24403,
-        "arr": 292836,
-        "newRevenue": 3732,
-        "churnedRevenue": 1729
+        "label": "Startup",
+        "value": 50
       },
       {
-        "month": "Feb",
-        "mrr": 26617,
-        "arr": 319404,
-        "newRevenue": 3092,
-        "churnedRevenue": 1489
+        "label": "SMB",
+        "value": 70
       },
       {
-        "month": "Mar",
-        "mrr": 30102,
-        "arr": 361224,
-        "newRevenue": 2770,
-        "churnedRevenue": 2324
-      },
-      {
-        "month": "Apr",
-        "mrr": 33190,
-        "arr": 398280,
-        "newRevenue": 4856,
-        "churnedRevenue": 757
-      },
-      {
-        "month": "May",
-        "mrr": 35951,
-        "arr": 431412,
-        "newRevenue": 3902,
-        "churnedRevenue": 847
-      },
-      {
-        "month": "Jun",
-        "mrr": 39784,
-        "arr": 477408,
-        "newRevenue": 2080,
-        "churnedRevenue": 817
-      },
-      {
-        "month": "Jul",
-        "mrr": 42932,
-        "arr": 515184,
-        "newRevenue": 2067,
-        "churnedRevenue": 1773
-      },
-      {
-        "month": "Aug",
-        "mrr": 45339,
-        "arr": 544068,
-        "newRevenue": 4418,
-        "churnedRevenue": 1791
-      },
-      {
-        "month": "Sep",
-        "mrr": 48483,
-        "arr": 581796,
-        "newRevenue": 3047,
-        "churnedRevenue": 1907
-      },
-      {
-        "month": "Oct",
-        "mrr": 50540,
-        "arr": 606480,
-        "newRevenue": 3816,
-        "churnedRevenue": 956
-      },
-      {
-        "month": "Nov",
-        "mrr": 53626,
-        "arr": 643512,
-        "newRevenue": 2011,
-        "churnedRevenue": 1878
-      },
-      {
-        "month": "Dec",
-        "mrr": 56873,
-        "arr": 682476,
-        "newRevenue": 1830,
-        "churnedRevenue": 1937
+        "label": "Enterprise",
+        "value": 30
       }
     ],
-    "semantic": { "processStep": 2, "segment": 0, "detailLevel": 2 },
-    "parentId": "pipeline",
-    "segmentLabel": "Startup",
-    "processLabel": "Pipeline"
+    "semantic": {
+      "processStep": 1,
+      "segment": null,
+      "detailLevel": 1
+    },
+    "parentId": "pipeline-summary",
+    "processLabel": "Lost Deals"
   },
   {
-    "id": "revenue-startup",
-    "title": "Startup Revenue",
+    "id": "lost-deals-value-segment",
+    "title": "Lost Deal Value by Segment",
+    "chartType": "bar",
+    "size": {
+      "width": 3,
+      "height": 2
+    },
+    "data": [
+      {
+        "label": "Startup",
+        "value": 100000
+      },
+      {
+        "label": "SMB",
+        "value": 150000
+      },
+      {
+        "label": "Enterprise",
+        "value": 50000
+      }
+    ],
+    "semantic": {
+      "processStep": 1,
+      "segment": null,
+      "detailLevel": 1
+    },
+    "parentId": "pipeline-summary",
+    "processLabel": "Lost Deal Value"
+  },
+  {
+    "id": "conversion-efficiency",
+    "title": "Conversion Efficiency Metrics",
     "chartType": "kpi",
-    "size": { "width": 3.5, "height": 2 },
+    "size": {
+      "width": 4,
+      "height": 2.5
+    },
     "data": [
       {
-        "label": "Total Customers",
-        "value": 1166,
-        "unit": "",
-        "trend": 11.4,
-        "trendDirection": "up"
+        "label": "Conversion Rate",
+        "value": "80%",
+        "trend": {
+          "value": "+2%",
+          "direction": "up",
+          "color": "green"
+        }
       },
       {
-        "label": "MRR",
-        "value": 71259,
-        "unit": "$",
-        "trend": 9.8,
-        "trendDirection": "up"
+        "label": "Average Deal Size",
+        "value": "$10k",
+        "trend": {
+          "value": "+5%",
+          "direction": "up",
+          "color": "green"
+        }
       },
       {
-        "label": "ARPU",
-        "value": -44,
-        "unit": "$",
-        "trend": -3.2,
-        "trendDirection": "down"
-      },
-      {
-        "label": "LTV",
-        "value": 626,
-        "unit": "$",
-        "trend": 7.2,
-        "trendDirection": "up"
-      },
-      {
-        "label": "NPS",
-        "value": -21,
-        "unit": "",
-        "trend": -0.3,
-        "trendDirection": "flat"
+        "label": "CAC",
+        "value": "$400",
+        "trend": {
+          "value": "-10%",
+          "direction": "down",
+          "color": "green"
+        }
       }
     ],
-    "semantic": { "processStep": 3, "segment": 0, "detailLevel": 2 },
-    "parentId": "revenue",
-    "segmentLabel": "Startup",
-    "processLabel": "Revenue"
-  },
-  {
-    "id": "retention-startup",
-    "title": "Startup Retention",
-    "chartType": "churn",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "month": "Jan", "churnRate": 7.43, "customers": 1400, "churned": 104 },
-      { "month": "Feb", "churnRate": 6.29, "customers": 1490, "churned": 94 },
-      { "month": "Mar", "churnRate": 6.98, "customers": 1580, "churned": 110 },
-      { "month": "Apr", "churnRate": 5.78, "customers": 1670, "churned": 97 },
-      { "month": "May", "churnRate": 5.37, "customers": 1760, "churned": 95 },
-      { "month": "Jun", "churnRate": 5.41, "customers": 1850, "churned": 100 },
-      { "month": "Jul", "churnRate": 5.09, "customers": 1940, "churned": 99 },
-      { "month": "Aug", "churnRate": 5.29, "customers": 2030, "churned": 107 },
-      { "month": "Sep", "churnRate": 4.52, "customers": 2120, "churned": 96 },
-      { "month": "Oct", "churnRate": 5.12, "customers": 2210, "churned": 113 },
-      { "month": "Nov", "churnRate": 5.08, "customers": 2300, "churned": 117 },
-      { "month": "Dec", "churnRate": 4.27, "customers": 2390, "churned": 102 }
-    ],
-    "semantic": { "processStep": 4, "segment": 0, "detailLevel": 2 },
-    "parentId": "retention",
-    "segmentLabel": "Startup",
-    "processLabel": "Retention"
-  },
-  {
-    "id": "marketing-smb",
-    "title": "SMB Marketing",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Starter", "revenue": 41955, "growth": 15.2 },
-      { "product": "Professional", "revenue": 94677, "growth": 21.4 },
-      { "product": "Enterprise", "revenue": 124305, "growth": 10.3 },
-      { "product": "Add-ons", "revenue": 20051, "growth": 38.9 }
-    ],
-    "semantic": { "processStep": 0, "segment": 1, "detailLevel": 2 },
-    "parentId": "marketing",
-    "segmentLabel": "SMB",
-    "processLabel": "Marketing"
-  },
-  {
-    "id": "leads-smb",
-    "title": "SMB Leads",
-    "chartType": "funnel",
-    "size": { "width": 2.5, "height": 2.5 },
-    "data": [
-      { "stage": "Website Visitors", "count": 18200, "conversionRate": 100 },
-      { "stage": "Sign-ups", "count": 2870, "conversionRate": 15.8 },
-      { "stage": "Trial Started", "count": 1435, "conversionRate": 50 },
-      { "stage": "Paid Conversion", "count": 431, "conversionRate": 30 },
-      { "stage": "Enterprise", "count": 65, "conversionRate": 15 }
-    ],
-    "semantic": { "processStep": 1, "segment": 1, "detailLevel": 2 },
-    "parentId": "leads",
-    "segmentLabel": "SMB",
-    "processLabel": "Leads"
-  },
-  {
-    "id": "pipeline-smb",
-    "title": "SMB Pipeline",
-    "chartType": "revenue",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      {
-        "month": "Jan",
-        "mrr": 37336,
-        "arr": 448032,
-        "newRevenue": 7152,
-        "churnedRevenue": 3416
-      },
-      {
-        "month": "Feb",
-        "mrr": 41620,
-        "arr": 499440,
-        "newRevenue": 6780,
-        "churnedRevenue": 1122
-      },
-      {
-        "month": "Mar",
-        "mrr": 46161,
-        "arr": 553932,
-        "newRevenue": 4842,
-        "churnedRevenue": 1330
-      },
-      {
-        "month": "Apr",
-        "mrr": 48797,
-        "arr": 585564,
-        "newRevenue": 3212,
-        "churnedRevenue": 2389
-      },
-      {
-        "month": "May",
-        "mrr": 54249,
-        "arr": 650988,
-        "newRevenue": 3816,
-        "churnedRevenue": 2632
-      },
-      {
-        "month": "Jun",
-        "mrr": 57870,
-        "arr": 694440,
-        "newRevenue": 4852,
-        "churnedRevenue": 911
-      },
-      {
-        "month": "Jul",
-        "mrr": 62482,
-        "arr": 749784,
-        "newRevenue": 5671,
-        "churnedRevenue": 1511
-      },
-      {
-        "month": "Aug",
-        "mrr": 67506,
-        "arr": 810072,
-        "newRevenue": 6668,
-        "churnedRevenue": 1708
-      },
-      {
-        "month": "Sep",
-        "mrr": 71766,
-        "arr": 861192,
-        "newRevenue": 5889,
-        "churnedRevenue": 3106
-      },
-      {
-        "month": "Oct",
-        "mrr": 76924,
-        "arr": 923088,
-        "newRevenue": 3554,
-        "churnedRevenue": 1534
-      },
-      {
-        "month": "Nov",
-        "mrr": 81254,
-        "arr": 975048,
-        "newRevenue": 4325,
-        "churnedRevenue": 2402
-      },
-      {
-        "month": "Dec",
-        "mrr": 85948,
-        "arr": 1031376,
-        "newRevenue": 2947,
-        "churnedRevenue": 2441
-      }
-    ],
-    "semantic": { "processStep": 2, "segment": 1, "detailLevel": 2 },
-    "parentId": "pipeline",
-    "segmentLabel": "SMB",
-    "processLabel": "Pipeline"
-  },
-  {
-    "id": "revenue-smb",
-    "title": "SMB Revenue",
-    "chartType": "kpi",
-    "size": { "width": 3.5, "height": 2 },
-    "data": [
-      {
-        "label": "Total Customers",
-        "value": 1707,
-        "unit": "",
-        "trend": 12.5,
-        "trendDirection": "up"
-      },
-      {
-        "label": "MRR",
-        "value": 99674,
-        "unit": "$",
-        "trend": 8.3,
-        "trendDirection": "up"
-      },
-      {
-        "label": "ARPU",
-        "value": 91,
-        "unit": "$",
-        "trend": -3,
-        "trendDirection": "down"
-      },
-      {
-        "label": "LTV",
-        "value": 867,
-        "unit": "$",
-        "trend": 5.8,
-        "trendDirection": "up"
-      },
-      {
-        "label": "NPS",
-        "value": 51,
-        "unit": "",
-        "trend": -0.8,
-        "trendDirection": "flat"
-      }
-    ],
-    "semantic": { "processStep": 3, "segment": 1, "detailLevel": 2 },
-    "parentId": "revenue",
-    "segmentLabel": "SMB",
-    "processLabel": "Revenue"
-  },
-  {
-    "id": "retention-smb",
-    "title": "SMB Retention",
-    "chartType": "churn",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "month": "Jan", "churnRate": 4.22, "customers": 980, "churned": 41 },
-      { "month": "Feb", "churnRate": 3.66, "customers": 1043, "churned": 38 },
-      { "month": "Mar", "churnRate": 3.42, "customers": 1106, "churned": 38 },
-      { "month": "Apr", "churnRate": 4.11, "customers": 1169, "churned": 48 },
-      { "month": "May", "churnRate": 3.91, "customers": 1232, "churned": 48 },
-      { "month": "Jun", "churnRate": 3.71, "customers": 1295, "churned": 48 },
-      { "month": "Jul", "churnRate": 4.1, "customers": 1358, "churned": 56 },
-      { "month": "Aug", "churnRate": 4.15, "customers": 1421, "churned": 59 },
-      { "month": "Sep", "churnRate": 3.48, "customers": 1484, "churned": 52 },
-      { "month": "Oct", "churnRate": 3.77, "customers": 1547, "churned": 58 },
-      { "month": "Nov", "churnRate": 3.65, "customers": 1610, "churned": 59 },
-      { "month": "Dec", "churnRate": 2.75, "customers": 1673, "churned": 46 }
-    ],
-    "semantic": { "processStep": 4, "segment": 1, "detailLevel": 2 },
-    "parentId": "retention",
-    "segmentLabel": "SMB",
-    "processLabel": "Retention"
-  },
-  {
-    "id": "marketing-enterprise",
-    "title": "Enterprise Marketing",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Starter", "revenue": 84481, "growth": 15.7 },
-      { "product": "Professional", "revenue": 199522, "growth": 23.4 },
-      { "product": "Enterprise", "revenue": 251279, "growth": 5 },
-      { "product": "Add-ons", "revenue": 36893, "growth": 37.8 }
-    ],
-    "semantic": { "processStep": 0, "segment": 2, "detailLevel": 2 },
-    "parentId": "marketing",
-    "segmentLabel": "Enterprise",
-    "processLabel": "Marketing"
-  },
-  {
-    "id": "leads-enterprise",
-    "title": "Enterprise Leads",
-    "chartType": "funnel",
-    "size": { "width": 2.5, "height": 2.5 },
-    "data": [
-      { "stage": "Website Visitors", "count": 7800, "conversionRate": 100 },
-      { "stage": "Sign-ups", "count": 1230, "conversionRate": 15.8 },
-      { "stage": "Trial Started", "count": 615, "conversionRate": 50 },
-      { "stage": "Paid Conversion", "count": 185, "conversionRate": 30 },
-      { "stage": "Enterprise", "count": 28, "conversionRate": 15 }
-    ],
-    "semantic": { "processStep": 1, "segment": 2, "detailLevel": 2 },
-    "parentId": "leads",
-    "segmentLabel": "Enterprise",
-    "processLabel": "Leads"
-  },
-  {
-    "id": "pipeline-enterprise",
-    "title": "Enterprise Pipeline",
-    "chartType": "revenue",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      {
-        "month": "Jan",
-        "mrr": 60487,
-        "arr": 725844,
-        "newRevenue": 8222,
-        "churnedRevenue": 3735
-      },
-      {
-        "month": "Feb",
-        "mrr": 67972,
-        "arr": 815664,
-        "newRevenue": 12099,
-        "churnedRevenue": 5523
-      },
-      {
-        "month": "Mar",
-        "mrr": 77311,
-        "arr": 927732,
-        "newRevenue": 10173,
-        "churnedRevenue": 4604
-      },
-      {
-        "month": "Apr",
-        "mrr": 84576,
-        "arr": 1014912,
-        "newRevenue": 9863,
-        "churnedRevenue": 3593
-      },
-      {
-        "month": "May",
-        "mrr": 91405,
-        "arr": 1096860,
-        "newRevenue": 8915,
-        "churnedRevenue": 4616
-      },
-      {
-        "month": "Jun",
-        "mrr": 99332,
-        "arr": 1191984,
-        "newRevenue": 8317,
-        "churnedRevenue": 4097
-      },
-      {
-        "month": "Jul",
-        "mrr": 106259,
-        "arr": 1275108,
-        "newRevenue": 9886,
-        "churnedRevenue": 3944
-      },
-      {
-        "month": "Aug",
-        "mrr": 114544,
-        "arr": 1374528,
-        "newRevenue": 10284,
-        "churnedRevenue": 3186
-      },
-      {
-        "month": "Sep",
-        "mrr": 120813,
-        "arr": 1449756,
-        "newRevenue": 9350,
-        "churnedRevenue": 3011
-      },
-      {
-        "month": "Oct",
-        "mrr": 127861,
-        "arr": 1534332,
-        "newRevenue": 8616,
-        "churnedRevenue": 4904
-      },
-      {
-        "month": "Nov",
-        "mrr": 135531,
-        "arr": 1626372,
-        "newRevenue": 12434,
-        "churnedRevenue": 2699
-      },
-      {
-        "month": "Dec",
-        "mrr": 141801,
-        "arr": 1701612,
-        "newRevenue": 9809,
-        "churnedRevenue": 2526
-      }
-    ],
-    "semantic": { "processStep": 2, "segment": 2, "detailLevel": 2 },
-    "parentId": "pipeline",
-    "segmentLabel": "Enterprise",
-    "processLabel": "Pipeline"
-  },
-  {
-    "id": "revenue-enterprise",
-    "title": "Enterprise Revenue",
-    "chartType": "kpi",
-    "size": { "width": 3.5, "height": 2 },
-    "data": [
-      {
-        "label": "Total Customers",
-        "value": 1880,
-        "unit": "",
-        "trend": 11.1,
-        "trendDirection": "up"
-      },
-      {
-        "label": "MRR",
-        "value": 114070,
-        "unit": "$",
-        "trend": 7.9,
-        "trendDirection": "up"
-      },
-      {
-        "label": "ARPU",
-        "value": 110,
-        "unit": "$",
-        "trend": -2,
-        "trendDirection": "down"
-      },
-      {
-        "label": "LTV",
-        "value": 858,
-        "unit": "$",
-        "trend": 5,
-        "trendDirection": "up"
-      },
-      {
-        "label": "NPS",
-        "value": -27,
-        "unit": "",
-        "trend": -1.3,
-        "trendDirection": "flat"
-      }
-    ],
-    "semantic": { "processStep": 3, "segment": 2, "detailLevel": 2 },
-    "parentId": "revenue",
-    "segmentLabel": "Enterprise",
-    "processLabel": "Revenue"
-  },
-  {
-    "id": "retention-enterprise",
-    "title": "Enterprise Retention",
-    "chartType": "churn",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "month": "Jan", "churnRate": 2.91, "customers": 420, "churned": 12 },
-      { "month": "Feb", "churnRate": 3.61, "customers": 447, "churned": 16 },
-      { "month": "Mar", "churnRate": 2.97, "customers": 474, "churned": 14 },
-      { "month": "Apr", "churnRate": 2.93, "customers": 501, "churned": 15 },
-      { "month": "May", "churnRate": 3.45, "customers": 528, "churned": 18 },
-      { "month": "Jun", "churnRate": 2.04, "customers": 555, "churned": 11 },
-      { "month": "Jul", "churnRate": 3.12, "customers": 582, "churned": 18 },
-      { "month": "Aug", "churnRate": 3.14, "customers": 609, "churned": 19 },
-      { "month": "Sep", "churnRate": 2.85, "customers": 636, "churned": 18 },
-      { "month": "Oct", "churnRate": 2.45, "customers": 663, "churned": 16 },
-      { "month": "Nov", "churnRate": 1.44, "customers": 690, "churned": 10 },
-      { "month": "Dec", "churnRate": 2.66, "customers": 717, "churned": 19 }
-    ],
-    "semantic": { "processStep": 4, "segment": 2, "detailLevel": 2 },
-    "parentId": "retention",
-    "segmentLabel": "Enterprise",
-    "processLabel": "Retention"
-  },
-  {
-    "id": "leads-startup-source",
-    "title": "Startup Leads by Source",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Organic Search", "revenue": 867, "growth": 17.1 },
-      { "product": "Paid Ads", "revenue": 722, "growth": 11.1 },
-      { "product": "Referrals", "revenue": 343, "growth": 25.7 },
-      { "product": "Events", "revenue": 364, "growth": -6.8 }
-    ],
-    "semantic": { "processStep": 1, "segment": 0, "detailLevel": 3 },
-    "parentId": "leads-startup",
-    "segmentLabel": "Startup",
-    "processLabel": "Leads"
-  },
-  {
-    "id": "leads-smb-source",
-    "title": "SMB Leads by Source",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Organic Search", "revenue": 2062, "growth": 20.6 },
-      { "product": "Paid Ads", "revenue": 1516, "growth": 13.8 },
-      { "product": "Referrals", "revenue": 938, "growth": 22.6 },
-      { "product": "Events", "revenue": 413, "growth": -3.2 }
-    ],
-    "semantic": { "processStep": 1, "segment": 1, "detailLevel": 3 },
-    "parentId": "leads-smb",
-    "segmentLabel": "SMB",
-    "processLabel": "Leads"
-  },
-  {
-    "id": "leads-enterprise-source",
-    "title": "Enterprise Leads by Source",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Organic Search", "revenue": 3395, "growth": 21.4 },
-      { "product": "Paid Ads", "revenue": 2919, "growth": 10.1 },
-      { "product": "Referrals", "revenue": 1251, "growth": 23.3 },
-      { "product": "Events", "revenue": 614, "growth": -3 }
-    ],
-    "semantic": { "processStep": 1, "segment": 2, "detailLevel": 3 },
-    "parentId": "leads-enterprise",
-    "segmentLabel": "Enterprise",
-    "processLabel": "Leads"
-  },
-  {
-    "id": "pipeline-startup-stage",
-    "title": "Startup Pipeline by Stage",
-    "chartType": "funnel",
-    "size": { "width": 2.5, "height": 2.5 },
-    "data": [
-      { "stage": "Discovery", "count": 441, "conversionRate": 100 },
-      { "stage": "Qualification", "count": 308, "conversionRate": 71.1 },
-      { "stage": "Proposal", "count": 172, "conversionRate": 56.3 },
-      { "stage": "Negotiation", "count": 107, "conversionRate": 52.8 },
-      { "stage": "Closed Won", "count": 47, "conversionRate": 44.2 }
-    ],
-    "semantic": { "processStep": 2, "segment": 0, "detailLevel": 3 },
-    "parentId": "pipeline-startup",
-    "segmentLabel": "Startup",
-    "processLabel": "Pipeline"
-  },
-  {
-    "id": "pipeline-smb-stage",
-    "title": "SMB Pipeline by Stage",
-    "chartType": "funnel",
-    "size": { "width": 2.5, "height": 2.5 },
-    "data": [
-      { "stage": "Discovery", "count": 303, "conversionRate": 100 },
-      { "stage": "Qualification", "count": 241, "conversionRate": 71.1 },
-      { "stage": "Proposal", "count": 115, "conversionRate": 56.3 },
-      { "stage": "Negotiation", "count": 84, "conversionRate": 52.8 },
-      { "stage": "Closed Won", "count": 39, "conversionRate": 44.2 }
-    ],
-    "semantic": { "processStep": 2, "segment": 1, "detailLevel": 3 },
-    "parentId": "pipeline-smb",
-    "segmentLabel": "SMB",
-    "processLabel": "Pipeline"
-  },
-  {
-    "id": "pipeline-enterprise-stage",
-    "title": "Enterprise Pipeline by Stage",
-    "chartType": "funnel",
-    "size": { "width": 2.5, "height": 2.5 },
-    "data": [
-      { "stage": "Discovery", "count": 195, "conversionRate": 100 },
-      { "stage": "Qualification", "count": 128, "conversionRate": 71.1 },
-      { "stage": "Proposal", "count": 72, "conversionRate": 56.3 },
-      { "stage": "Negotiation", "count": 47, "conversionRate": 52.8 },
-      { "stage": "Closed Won", "count": 4, "conversionRate": 44.2 }
-    ],
-    "semantic": { "processStep": 2, "segment": 2, "detailLevel": 3 },
-    "parentId": "pipeline-enterprise",
-    "segmentLabel": "Enterprise",
-    "processLabel": "Pipeline"
-  },
-  {
-    "id": "revenue-startup-account",
-    "title": "Startup Revenue by Account",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Acme Corp", "revenue": 7599, "growth": 6.3 },
-      { "product": "GlobalTech", "revenue": 5826, "growth": 13.6 },
-      { "product": "DataFlow Inc", "revenue": 5242, "growth": -2.5 },
-      { "product": "CloudFirst", "revenue": 7454, "growth": 19.9 },
-      { "product": "NetScale", "revenue": 4912, "growth": 4 }
-    ],
-    "semantic": { "processStep": 3, "segment": 0, "detailLevel": 3 },
-    "parentId": "revenue-startup",
-    "segmentLabel": "Startup",
-    "processLabel": "Revenue"
-  },
-  {
-    "id": "revenue-smb-account",
-    "title": "SMB Revenue by Account",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Acme Corp", "revenue": 19825, "growth": 4.6 },
-      { "product": "GlobalTech", "revenue": 19395, "growth": 14.1 },
-      { "product": "DataFlow Inc", "revenue": 15214, "growth": -4.4 },
-      { "product": "CloudFirst", "revenue": 15297, "growth": 18 },
-      { "product": "NetScale", "revenue": 9769, "growth": 3.2 }
-    ],
-    "semantic": { "processStep": 3, "segment": 1, "detailLevel": 3 },
-    "parentId": "revenue-smb",
-    "segmentLabel": "SMB",
-    "processLabel": "Revenue"
-  },
-  {
-    "id": "revenue-enterprise-account",
-    "title": "Enterprise Revenue by Account",
-    "chartType": "bar",
-    "size": { "width": 3, "height": 2 },
-    "data": [
-      { "product": "Acme Corp", "revenue": 44757, "growth": 7.9 },
-      { "product": "GlobalTech", "revenue": 36261, "growth": 14.4 },
-      { "product": "DataFlow Inc", "revenue": 31455, "growth": -4.1 },
-      { "product": "CloudFirst", "revenue": 29539, "growth": 19.3 },
-      { "product": "NetScale", "revenue": 20475, "growth": 9.5 }
-    ],
-    "semantic": { "processStep": 3, "segment": 2, "detailLevel": 3 },
-    "parentId": "revenue-enterprise",
-    "segmentLabel": "Enterprise",
-    "processLabel": "Revenue"
+    "semantic": {
+      "processStep": 2,
+      "segment": null,
+      "detailLevel": 0
+    },
+    "parentId": "pipeline-summary",
+    "processLabel": "Efficiency Metrics"
   }
 ]
