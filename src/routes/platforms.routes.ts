@@ -188,19 +188,41 @@ export function createPlatformsRouter(
     try {
       // 1. Retrieve metadata from the adapter
       const metadata = await chartService.getPlatformMetadata(platformId);
+
+      if (!metadata) {
+        res.status(404).json({
+          success: false,
+          error: `Metadata for platform "${platformId}" not found.`,
+          statusCode: 404,
+        });
+        return;
+      }
+
       console.log(
         `[UserQuery] Metadata for ${platformId}:`,
         JSON.stringify(metadata, null, 2),
       );
 
-      // Integration point for LangChain service
-      // const response = await langChainService.chat(query);
+      // 2. Use LangChain service to identify relevant data sources
+      const dataSourceSelection = await langChainService.identifyDataSources(query, metadata);
 
+      console.log(
+        `[UserQuery] AI identified ${dataSourceSelection.relevantIds.length} relevant data sources:`,
+        dataSourceSelection.relevantIds.map((m: any) => m.id),
+      );
+
+      // 3. Return the selected data sources
       res.json({
         success: true,
-        data: { query },
+        platform: platformId,
+        data: {
+          query,
+          relevantIds: dataSourceSelection.relevantIds,
+          reasoning: dataSourceSelection.reasoning,
+        },
       });
     } catch (error: any) {
+      console.error('[UserQuery] Error:', error);
       res.status(500).json({
         success: false,
         error: error.message || 'Internal server error',
