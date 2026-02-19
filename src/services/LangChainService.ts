@@ -7,7 +7,7 @@ export interface DataSourceMetadata {
 }
 
 export interface DataSourceSelection {
-  relevantIds: DataSourceMetadata[];
+  relevantMetadata: DataSourceMetadata[];
   reasoning?: string;
 }
 
@@ -56,13 +56,13 @@ export class LangChainService implements ILangChainService {
       const parsed = JSON.parse(content);
 
       // Convert the response to use full metadata objects
-      const relevantIds = this.mapIdsToMetadata(
+      const relevantMetadata = this.mapIdsToMetadata(
         parsed.relevantIds || [],
         metadata,
       );
 
       return {
-        relevantIds,
+        relevantMetadata,
         reasoning: parsed.reasoning,
       };
     } catch (error) {
@@ -70,13 +70,13 @@ export class LangChainService implements ILangChainService {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        const relevantIds = this.mapIdsToMetadata(
+        const relevantMetadata = this.mapIdsToMetadata(
           parsed.relevantIds || [],
           metadata,
         );
 
         return {
-          relevantIds,
+          relevantMetadata,
           reasoning: parsed.reasoning,
         };
       }

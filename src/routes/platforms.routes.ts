@@ -150,8 +150,14 @@ export function createPlatformsRouter(
    * @swagger
    * /api/platforms/{platformId}/userquery:
    *   post:
-   *     summary: Query the platform
-   *     description: Send a query to the platform's AI agent
+   *     summary: Query the platform with natural language
+   *     description: |
+   *       Analyzes a natural language query using AI to identify relevant data sources,
+   *       then fetches the complete chart data for all identified sources.
+   *
+   *       The AI considers business context (marketing, leads, pipeline, revenue, retention),
+   *       customer segments (startup, SMB, enterprise), and detail level to select
+   *       the most relevant charts.
    *     tags: [Platforms]
    *     parameters:
    *       - in: path
@@ -159,18 +165,70 @@ export function createPlatformsRouter(
    *         required: true
    *         schema:
    *           type: string
+   *           example: 3danalytics
+   *         description: The platform adapter identifier
    *     requestBody:
    *       required: true
    *       content:
    *         application/json:
    *           schema:
    *             type: object
+   *             required:
+   *               - query
    *             properties:
    *               query:
    *                 type: string
+   *                 example: "Show me marketing performance for startups"
+   *                 description: Natural language query describing the data you want to see
    *     responses:
    *       200:
-   *         description: Success response
+   *         description: Successfully identified and fetched relevant charts
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 platform:
+   *                   type: string
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     query:
+   *                       type: string
+   *                     reasoning:
+   *                       type: string
+   *                       description: AI explanation of why these charts were selected
+   *                     charts:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           id:
+   *                             type: string
+   *                           api:
+   *                             type: string
+   *                           chart:
+   *                             type: object
+   *                             description: Full chart object with data payload
+   *                           success:
+   *                             type: boolean
+   *                     meta:
+   *                       type: object
+   *                       properties:
+   *                         total:
+   *                           type: integer
+   *                         successful:
+   *                           type: integer
+   *                         failed:
+   *                           type: integer
+   *       400:
+   *         description: Missing or invalid query parameter
+   *       404:
+   *         description: Platform not found or no metadata available
+   *       500:
+   *         description: Internal server error
    */
   router.post('/:platformId/userquery', async (req: Request, res: Response) => {
     const { platformId } = req.params;
@@ -207,18 +265,57 @@ export function createPlatformsRouter(
       const dataSourceSelection = await langChainService.identifyDataSources(query, metadata);
 
       console.log(
-        `[UserQuery] AI identified ${dataSourceSelection.relevantIds.length} relevant data sources:`,
-        dataSourceSelection.relevantIds.map((m: any) => m.id),
+        `[UserQuery] AI identified ${dataSourceSelection.relevantMetadata.length} relevant data sources:`,
+        dataSourceSelection.relevantMetadata.map((m: any) => m.id),
       );
 
-      // 3. Return the selected data sources
+      // 3. Fetch actual chart data for all identified data sources in parallel
+      // Using Promise.allSettled to handle individual failures gracefully
+      const chartPromises = dataSourceSelection.relevantMetadata.map(
+        (dataSource: any) =>
+          chartService
+            .getChart(platformId, dataSource.id)
+            .then((chart) => ({
+              ...dataSource,
+              chart,
+              success: chart !== null,
+            }))
+            .catch((error: any) => {
+              console.error(
+                `[UserQuery] Error fetching chart ${dataSource.id}:`,
+                error.message,
+              );
+              return {
+                ...dataSource,
+                chart: null,
+                success: false,
+                error: error.message,
+              };
+            }),
+      );
+
+      const chartsWithData = await Promise.all(chartPromises);
+
+      // Filter out any failed fetches (optional - you can keep them to show errors)
+      const successfulCharts = chartsWithData.filter((c) => c.success);
+
+      console.log(
+        `[UserQuery] Successfully fetched ${successfulCharts.length}/${dataSourceSelection.relevantMetadata.length} charts`,
+      );
+
+      // 4. Return the selected data sources with their chart data
       res.json({
         success: true,
         platform: platformId,
         data: {
           query,
-          relevantIds: dataSourceSelection.relevantIds,
           reasoning: dataSourceSelection.reasoning,
+          charts: chartsWithData,
+          meta: {
+            total: chartsWithData.length,
+            successful: successfulCharts.length,
+            failed: chartsWithData.length - successfulCharts.length,
+          },
         },
       });
     } catch (error: any) {
