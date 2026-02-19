@@ -144,7 +144,7 @@ export class LangChainService implements ILangChainService {
 
       // The prompt expects an object with data, narrative, keyInsights
       // Handle both cases for backward compatibility: array or object with data property
-      const visualizations = Array.isArray(parsed) ? parsed : (parsed.data || []);
+      const visualizations = Array.isArray(parsed) ? parsed : parsed.data || [];
 
       console.log(
         '[LangChain] Parsed visualizations count:',
@@ -470,6 +470,180 @@ GLOBAL RULES
 	•	Break semantic coordinate logic
 
 ⸻
+
+CHART DATA STRUCTURE ENFORCEMENT (MANDATORY)
+
+You MUST strictly conform to the following chart data contracts.
+
+These are pure visualization contracts.
+They define what shape the chart data MUST follow.
+
+You are NOT allowed to invent fields.
+You are NOT allowed to rename fields.
+You are NOT allowed to mix formats between chart types.
+
+⸻
+
+ALLOWED CHART TYPES AND REQUIRED DATA STRUCTURE
+
+1️⃣ chartType: “kpi”
+
+data MUST be:
+
+KpiCardItem[]
+
+Each item MUST follow:
+
+{
+label: string,
+value: string,
+trend?: {
+value: string,
+direction: “up” | “down” | “flat”,
+color: string
+}
+}
+
+Rules:
+	•	value MUST be pre-formatted (e.g. “$45.2k”, “12.4%”, “1,234”)
+	•	trend is optional
+	•	DO NOT output numeric raw values here
+
+⸻
+
+2️⃣ chartType: “bar”
+
+data MUST be:
+
+BarItem[]
+
+Each item MUST follow:
+
+{
+label: string,
+value: number,
+color?: string
+}
+
+Rules:
+	•	value MUST be numeric
+	•	label represents x-axis
+	•	No additional fields allowed
+
+⸻
+
+3️⃣ chartType: “revenue” (multi-line time series)
+
+data MUST be:
+
+{
+points: LineChartPoint[],
+series: LineSeries[]
+}
+
+LineChartPoint MUST follow:
+
+{
+x: string,
+[seriesKey: string]: number
+}
+
+LineSeries MUST follow:
+
+{
+key: string,
+label: string,
+color: string
+}
+
+Rules:
+	•	Each LineSeries.key MUST match a key inside LineChartPoint
+	•	No extra fields
+	•	x is required
+
+⸻
+
+4️⃣ chartType: “area”
+
+data MUST be:
+
+AreaChartData
+
+{
+points: [
+{ x: string, y: number }
+],
+referenceLine?: {
+value: number,
+label?: string,
+color?: string
+}
+}
+
+Rules:
+	•	y MUST be numeric
+	•	referenceLine optional
+
+⸻
+
+5️⃣ chartType: “funnel”
+
+data MUST be:
+
+[
+{
+label: string,
+value: number
+}
+]
+
+Rules:
+	•	Ordered from top stage to bottom stage
+	•	No conversionRate field
+	•	No extra fields
+
+⸻
+
+6️⃣ chartType: “churn”
+
+data MUST follow AreaChartData structure.
+
+⸻
+
+STRICT VALIDATION RULES
+	•	DO NOT mix data contracts.
+	•	DO NOT add custom keys.
+	•	DO NOT include transformation metadata.
+	•	DO NOT include business schema.
+	•	Only output visualization-ready data.
+	•	If a chartType requires a specific contract, you MUST follow it exactly.
+
+If you cannot map the requested visualization to one of the allowed contracts, choose the closest valid chart type.
+
+⸻
+
+DATA TRANSFORMATION RULE
+
+You are responsible for transforming domain data into visualization-ready format.
+
+The output MUST represent what React components need to render directly.
+
+No backend schema.
+No raw database structure.
+No nested business models.
+Only chart data contracts defined above.
+
+⸻
+
+FINAL CONSTRAINT
+
+The JSON output must satisfy BOTH:
+	1.	Semantic coordinate system
+	2.	Chart data contracts
+
+If either is violated, the output is invalid.
+
+----
 
 CHART TYPE SELECTION
 
