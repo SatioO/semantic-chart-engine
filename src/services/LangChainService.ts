@@ -120,7 +120,7 @@ export class LangChainService implements ILangChainService {
 
   /**
    * Orchestrates visualization layout with AI-driven insights and structure.
-   * This creates an intelligent dashboard layout from raw chart data.
+   * The prompt returns a JSON array directly - AI generates complete visualizations with data.
    */
   async orchestrateVisualization(
     query: string,
@@ -141,46 +141,59 @@ export class LangChainService implements ILangChainService {
 
     try {
       const parsed = JSON.parse(content);
-      console.log(
-        '[LangChain] Parsed data array length:',
-        (parsed.data || []).length,
-      );
 
-      // Merge actual chart data into each visualization object
-      const visualizationsWithData = this.mergeChartData(
-        parsed.data || [],
-        charts,
+      // The prompt returns an array directly, not an object with 'data' property
+      // Handle both cases: array or object with data property
+      const visualizations = Array.isArray(parsed) ? parsed : (parsed.data || []);
+
+      console.log(
+        '[LangChain] Parsed visualizations count:',
+        visualizations.length,
       );
 
       return {
-        data: visualizationsWithData,
+        data: visualizations,
         meta: {
-          total: visualizationsWithData.length,
-          narrative: parsed.narrative,
-          keyInsights: parsed.keyInsights,
-          filters: parsed.filters,
+          total: visualizations.length,
+          narrative: Array.isArray(parsed) ? undefined : parsed.narrative,
+          keyInsights: Array.isArray(parsed) ? undefined : parsed.keyInsights,
+          filters: Array.isArray(parsed) ? undefined : parsed.filters,
         },
       };
     } catch (error) {
       console.log('[LangChain] Failed to parse as JSON, trying regex match...');
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        console.log(
-          '[LangChain] Parsed data array length (from regex):',
-          (parsed.data || []).length,
-        );
 
-        // Merge actual chart data into each visualization object
-        const visualizationsWithData = this.mergeChartData(
-          parsed.data || [],
-          charts,
+      // Try to match array [...] or object {...}
+      const arrayMatch = content.match(/\[[\s\S]*\]/);
+      const objectMatch = content.match(/\{[\s\S]*\}/);
+
+      if (arrayMatch) {
+        const parsed = JSON.parse(arrayMatch[0]);
+        console.log(
+          '[LangChain] Parsed visualizations count (from array regex):',
+          parsed.length,
         );
 
         return {
-          data: visualizationsWithData,
+          data: parsed,
           meta: {
-            total: visualizationsWithData.length,
+            total: parsed.length,
+          },
+        };
+      }
+
+      if (objectMatch) {
+        const parsed = JSON.parse(objectMatch[0]);
+        const visualizations = parsed.data || [];
+        console.log(
+          '[LangChain] Parsed visualizations count (from object regex):',
+          visualizations.length,
+        );
+
+        return {
+          data: visualizations,
+          meta: {
+            total: visualizations.length,
             narrative: parsed.narrative,
             keyInsights: parsed.keyInsights,
             filters: parsed.filters,
@@ -188,8 +201,13 @@ export class LangChainService implements ILangChainService {
         };
       }
 
-      console.error('[LangChain] Failed to parse orchestration response:', error);
-      throw new Error(`Failed to parse visualization orchestration: ${content}`);
+      console.error(
+        '[LangChain] Failed to parse orchestration response:',
+        error,
+      );
+      throw new Error(
+        `Failed to parse visualization orchestration: ${content}`,
+      );
     }
   }
 
@@ -219,32 +237,6 @@ export class LangChainService implements ILangChainService {
         return found;
       })
       .filter((m) => m.api !== ''); // Filter out items not found in metadata
-  }
-
-  /**
-   * Merges actual chart data into visualization objects based on matching IDs.
-   */
-  private mergeChartData(
-    visualizations: ChartVisualization[],
-    charts: any[],
-  ): ChartVisualization[] {
-    return visualizations.map((viz) => {
-      // Find the matching chart by ID
-      const matchingChart = charts.find((c) => c.id === viz.id);
-
-      if (matchingChart && matchingChart.chart && matchingChart.chart.data) {
-        // Merge the chart data into the visualization object
-        return {
-          ...viz,
-          data: matchingChart.chart.data,
-        };
-      }
-
-      console.warn(
-        `[LangChain] No chart data found for visualization ID: ${viz.id}`,
-      );
-      return viz;
-    });
   }
 
   /**
@@ -403,310 +395,246 @@ Now, analyze the user's query and respond with the relevant data sources in JSON
    * This creates hierarchical drill-down structures for interactive dashboards.
    */
   private buildVisualizationOrchestrationPrompt(): string {
-    return `You are an elite analytics architect specializing in creating intelligent, hierarchical drill-down dashboard structures. Your task is to ANALYZE the user's question and available data, then CREATE different visualizations that form a logical drill-down hierarchy for data exploration.
+    return `You are an AI Visualization Engine that transforms a natural language business query and a structured dataset into a semantically structured visualization graph.
 
-# CRITICAL: You Are Creating NEW Visualizations, Not Just Listing Input Charts
+Your task is to generate a JSON array of visualization panel objects that strictly follow the provided schema.
 
-Your job is NOT to simply return the charts you receive. Instead:
-1. **Understand the question**: What is the user trying to learn?
-2. **Analyze the data**: What patterns, trends, and insights exist?
-3. **Design the story**: What sequence of views best answers their question?
-4. **Create visualizations**: Generate different views from overview to detail
-5. **Build hierarchy**: Organize views with semantic parameters for drill-down navigation
+⸻
 
-# Your Expertise
+OBJECTIVE
 
-You understand:
-- **Data analysis**: Identifying trends, patterns, anomalies in raw data
-- **Hierarchical storytelling**: Building narrative from overview → detail
-- **Business funnel**: Marketing → Leads → Pipeline → Revenue → Retention
-- **Segment analysis**: Comparing across customer types (Startup, SMB, Enterprise)
-- **Drill-down flow**: Creating logical parent-child relationships
-- **Semantic structure**: Using processStep, segment, detailLevel to define relationships
+Given:
+	1.	A user query
+	2.	Available structured data (metrics, segments, dimensions, time, hierarchy)
 
-# Hierarchy Structure
+You must:
+	•	Interpret the intent of the query
+	•	Identify causal flow (process progression)
+	•	Identify segmentation dimensions
+	•	Identify drill-down hierarchies
+	•	Construct a semantically coherent visualization structure
+	•	Encode relationships using the orthogonal 3-axis grammar
+	•	Return ONLY a JSON array (no markdown, no explanation)
 
-## Detail Levels (detailLevel):
-- **0**: Dashboard (root/overview) - ID: "dashboard"
-- **1**: Process-level (children of dashboard) - marketing, leads, pipeline, revenue, retention
-- **2**: Segment-level (children of process) - {process}-{segment} (e.g., "marketing-startup")
-- **3**: Detail-level (children of segment) - {process}-{segment}-{detail} (e.g., "leads-startup-source")
+⸻
 
-## Process Steps (processStep):
-- **0**: Marketing
-- **1**: Leads
-- **2**: Pipeline
-- **3**: Revenue
-- **4**: Retention
-- **null**: For dashboard/overview
+SEMANTIC MODEL (MANDATORY)
 
-## Segments (segment):
-- **null**: Cross-segment (no specific segment) - used for process-level (detailLevel 1)
-- **0**: Startup
-- **1**: SMB
-- **2**: Enterprise
+Every panel must follow this coordinate system:
 
-## Parent-Child Relationships Example:
+X-axis → Sequence / Causality (process progression)
+Y-axis → Category / Segment (parallel peers)
+Z-axis → Detail Level (abstraction depth)
 
-dashboard (detailLevel: 0)
-  ├── marketing (detailLevel: 1, parentId: "dashboard")
-  │   ├── marketing-startup (detailLevel: 2, parentId: "marketing")
-  │   ├── marketing-smb (detailLevel: 2, parentId: "marketing")
-  │   └── marketing-enterprise (detailLevel: 2, parentId: "marketing")
-  ├── leads (detailLevel: 1, parentId: "dashboard")
-  │   ├── leads-startup (detailLevel: 2, parentId: "leads")
-  │   │   └── leads-startup-source (detailLevel: 3, parentId: "leads-startup")
-  │   ├── leads-smb (detailLevel: 2, parentId: "leads")
-  │   │   └── leads-smb-source (detailLevel: 3, parentId: "leads-smb")
-  │   └── leads-enterprise (detailLevel: 2, parentId: "leads")
-  │       └── leads-enterprise-source (detailLevel: 3, parentId: "leads-enterprise")
-  ├── pipeline (detailLevel: 1, parentId: "dashboard")
-  │   ├── pipeline-startup (detailLevel: 2, parentId: "pipeline")
-  │   │   └── pipeline-startup-stage (detailLevel: 3, parentId: "pipeline-startup")
-  │   ├── pipeline-smb (detailLevel: 2, parentId: "pipeline")
-  │   │   └── pipeline-smb-stage (detailLevel: 3, parentId: "pipeline-smb")
-  │   └── pipeline-enterprise (detailLevel: 2, parentId: "pipeline")
-  │       └── pipeline-enterprise-stage (detailLevel: 3, parentId: "pipeline-enterprise")
-  ├── revenue (detailLevel: 1, parentId: "dashboard")
-  │   ├── revenue-startup (detailLevel: 2, parentId: "revenue")
-  │   │   └── revenue-startup-account (detailLevel: 3, parentId: "revenue-startup")
-  │   ├── revenue-smb (detailLevel: 2, parentId: "revenue")
-  │   │   └── revenue-smb-account (detailLevel: 3, parentId: "revenue-smb")
-  │   └── revenue-enterprise (detailLevel: 2, parentId: "revenue")
-  │       └── revenue-enterprise-account (detailLevel: 3, parentId: "revenue-enterprise")
-  └── retention (detailLevel: 1, parentId: "dashboard")
-      ├── retention-startup (detailLevel: 2, parentId: "retention")
-      ├── retention-smb (detailLevel: 2, parentId: "retention")
-      └── retention-enterprise (detailLevel: 2, parentId: "retention")
+Each panel must define:
 
-# Your Task: Intelligent Drill-Down Design
-
-Given the user's query and available chart data, CREATE a hierarchical structure of visualizations:
-
-1. **Understand the Goal**: What question is the user asking? What do they need to learn?
-
-2. **Analyze Available Data**: Review all chart data provided. Look for:
-   - Overall trends and patterns
-   - Segment-level differences (Startup vs SMB vs Enterprise)
-   - Process-level metrics (Marketing, Leads, Pipeline, Revenue, Retention)
-   - Interesting insights that warrant deeper exploration
-
-3. **Design the Hierarchy**: Create a logical flow from overview to detail:
-   - **Level 0 (Dashboard)**: High-level overview answering the main question
-   - **Level 1 (Process)**: Break down by business process if relevant
-   - **Level 2 (Segment)**: Compare across customer segments if relevant
-   - **Level 3 (Detail)**: Deep dives into specific breakdowns (sources, stages, accounts)
-
-4. **Create Visualizations**: For each level, design a visualization that:
-   - Has a clear, descriptive title
-   - Uses appropriate chart type for the data
-   - Includes the right semantic parameters to define its place in hierarchy
-   - References its parent to enable drill-down navigation
-
-5. **Assign Semantic Parameters Intelligently**:
-   - **processStep**: Which business process does this view focus on? (0-4 or null)
-   - **segment**: Which customer segment? (null for all, 0-2 for specific)
-   - **detailLevel**: How deep in the hierarchy? (0=overview, 1=process, 2=segment, 3=detail)
-   - **parentId**: What visualization is this a drill-down from?
-
-6. **Think Creatively**: Don't just return the input charts. Create meaningful views that tell a story.
-
-# Sizing Guidelines
-
-- **Dashboard level (0)**: Not typically shown, children displayed
-- **Process level (1)**: width: 3, height: 2 (fits 4 across)
-- **Segment level (2)**: width: 4, height: 2.5 (fits 3 across)
-- **Detail level (3)**: width: 6-12, height: 3-4 (focus view)
-
-# Chart Type Mapping
-
-Based on ID pattern:
-- marketing, leads, pipeline, revenue, retention (level 1) → "bar"
-- {process}-{segment} (level 2) → "bar" or "kpi"
-- {process}-{segment}-source/stage/account (level 3) → "bar" or detailed chart type
-
-# Response Format
-
-You MUST respond with valid JSON only:
-
-\`\`\`json
-{
-  "data": [
-    {
-      "id": "marketing",
-      "title": "Marketing Spend",
-      "chartType": "bar",
-      "size": {
-        "width": 3,
-        "height": 2
-      },
-      "semantic": {
-        "processStep": 0,
-        "segment": null,
-        "detailLevel": 1
-      },
-      "processLabel": "Marketing",
-      "parentId": "dashboard",
-      "segmentLabel": null
-    },
-    {
-      "id": "marketing-startup",
-      "title": "Startup Marketing",
-      "chartType": "bar",
-      "size": {
-        "width": 4,
-        "height": 2.5
-      },
-      "semantic": {
-        "processStep": 0,
-        "segment": 0,
-        "detailLevel": 2
-      },
-      "processLabel": "Marketing",
-      "parentId": "marketing",
-      "segmentLabel": "Startup"
-    }
-  ],
-  "narrative": "Brief story about what this hierarchy shows",
-  "keyInsights": ["Data-driven insight 1", "Insight 2"],
-  "filters": {}
+semantic: {
+processStep: number,
+segment: number | null,
+detailLevel: number
 }
-\`\`\`
 
-# Process Label Mapping
+Panel Address = (processStep, segment, detailLevel)
 
-- processStep 0 → "Marketing"
-- processStep 1 → "Leads"
-- processStep 2 → "Pipeline"
-- processStep 3 → "Revenue"
-- processStep 4 → "Retention"
-- processStep null → null
+⸻
 
-# Segment Label Mapping
+GLOBAL RULES
+	1.	The FIRST object in the array MUST:
+	•	Be the global summary
+	•	Have detailLevel = 0
+	•	Have segment = null
+	•	Represent the overall interpretation of the user query
+	•	Contain KPI-style aggregated metrics
+	2.	Horizontal (X) Rules:
+	•	Sequential / causal stages must increase processStep
+	3.	Vertical (Y) Rules:
+	•	Parallel segments share same processStep and detailLevel
+	•	Use numeric segment indexes (0,1,2…)
+	•	segment = null only for aggregated panels
+	4.	Depth (Z) Rules:
+	•	Higher detailLevel = deeper drill-down
+	•	Children must reference parentId
+	•	Same (processStep, segment), higher detailLevel = drill-down hierarchy
+	5.	parentId:
+	•	Required for every non-root panel
+	•	Must reference an existing panel id
+	6.	processLabel:
+	•	Required on every panel
+	7.	segmentLabel:
+	•	Required when segment is not null
+	8.	Do NOT:
+	•	Output explanations
+	•	Output markdown
+	•	Add fields outside schema
+	•	Skip required fields
+	•	Break semantic coordinate logic
 
-- segment null → null
-- segment 0 → "Startup"
-- segment 1 → "SMB"
-- segment 2 → "Enterprise"
+⸻
 
-# Example 1: "Show me revenue for all segments"
+CHART TYPE SELECTION
 
-**Input Charts**: revenue, revenue-startup, revenue-smb, revenue-enterprise
-**Your Analysis**: User wants revenue comparison. I'll create an overview first, then segment breakdowns.
+“kpi” → summaries
+“bar” → segment comparison
+“funnel” → stage transition
+“revenue” → time-series progression
+“churn” → retention
 
-\`\`\`json
+⸻
+
+SIZE GUIDELINES
+
+detailLevel 0 → width 4, height 2.5
+detailLevel 1 → width 3, height 2
+funnel → width 2.5, height 2.5
+detailLevel ≥ 2 → width 3, height 2
+
+⸻
+
+FEW-SHOT EXAMPLES
+
+Example 1
+
+User Query:
+“Show overall revenue performance and breakdown by segment.”
+
+Expected Output:
+
+[
 {
-  "data": [
-    {
-      "id": "revenue-overview",
-      "title": "Total Revenue Performance",
-      "chartType": "kpi",
-      "size": { "width": 12, "height": 3 },
-      "semantic": { "processStep": 3, "segment": null, "detailLevel": 0 },
-      "processLabel": "Revenue",
-      "parentId": null,
-      "segmentLabel": "All"
-    },
-    {
-      "id": "revenue-startup",
-      "title": "Startup Segment Revenue",
-      "chartType": "bar",
-      "size": { "width": 4, "height": 2.5 },
-      "semantic": { "processStep": 3, "segment": 0, "detailLevel": 2 },
-      "processLabel": "Revenue",
-      "parentId": "revenue-overview",
-      "segmentLabel": "Startup"
-    },
-    {
-      "id": "revenue-smb",
-      "title": "SMB Segment Revenue",
-      "chartType": "bar",
-      "size": { "width": 4, "height": 2.5 },
-      "semantic": { "processStep": 3, "segment": 1, "detailLevel": 2 },
-      "processLabel": "Revenue",
-      "parentId": "revenue-overview",
-      "segmentLabel": "SMB"
-    },
-    {
-      "id": "revenue-enterprise",
-      "title": "Enterprise Segment Revenue",
-      "chartType": "bar",
-      "size": { "width": 4, "height": 2.5 },
-      "semantic": { "processStep": 3, "segment": 2, "detailLevel": 2 },
-      "processLabel": "Revenue",
-      "parentId": "revenue-overview",
-      "segmentLabel": "Enterprise"
-    }
-  ],
-  "narrative": "Revenue analysis across all customer segments showing total performance with drill-down to segment-level details.",
-  "keyInsights": ["Total MRR at $3.8M", "Enterprise leads at 55% of total", "Startup showing 78% growth"]
-}
-\`\`\`
-
-# Example 2: "How is our pipeline performing?"
-
-**Input Charts**: pipeline, pipeline-startup, pipeline-smb, pipeline-enterprise, pipeline-startup-stage, pipeline-smb-stage, pipeline-enterprise-stage
-**Your Analysis**: User wants pipeline health. I'll show overall pipeline, then segment comparison, then stage breakdowns for deeper analysis.
-
-\`\`\`json
+“id”: “overview”,
+“title”: “Revenue Overview”,
+“chartType”: “kpi”,
+“size”: { “width”: 4, “height”: 2.5 },
+“data”: [
+{ “label”: “Total Revenue”, “value”: 1250000, “unit”: “$”, “trend”: 8.4, “trendDirection”: “up” },
+{ “label”: “Growth Rate”, “value”: 12.5, “unit”: “%”, “trend”: 1.2, “trendDirection”: “up” }
+],
+“semantic”: { “processStep”: 0, “segment”: null, “detailLevel”: 0 },
+“processLabel”: “Revenue”
+},
 {
-  "data": [
-    {
-      "id": "pipeline-overview",
-      "title": "Overall Pipeline Health",
-      "chartType": "kpi",
-      "size": { "width": 12, "height": 3 },
-      "semantic": { "processStep": 2, "segment": null, "detailLevel": 0 },
-      "processLabel": "Pipeline",
-      "parentId": null,
-      "segmentLabel": "All"
-    },
-    {
-      "id": "pipeline-startup",
-      "title": "Startup Pipeline",
-      "chartType": "bar",
-      "size": { "width": 4, "height": 2.5 },
-      "semantic": { "processStep": 2, "segment": 0, "detailLevel": 2 },
-      "processLabel": "Pipeline",
-      "parentId": "pipeline-overview",
-      "segmentLabel": "Startup"
-    },
-    {
-      "id": "pipeline-startup-stage",
-      "title": "Startup Pipeline by Stage",
-      "chartType": "bar",
-      "size": { "width": 6, "height": 3 },
-      "semantic": { "processStep": 2, "segment": 0, "detailLevel": 3 },
-      "processLabel": "Pipeline",
-      "parentId": "pipeline-startup",
-      "segmentLabel": "Startup"
-    }
-  ],
-  "narrative": "Pipeline analysis showing overall health with ability to drill into segment-specific performance and stage-level details.",
-  "keyInsights": ["Total pipeline value $1.45M", "Startup conversion rate 12%", "Qualification stage has most opportunities"]
+“id”: “revenue-segment”,
+“title”: “Revenue by Segment”,
+“chartType”: “bar”,
+“size”: { “width”: 3, “height”: 2 },
+“data”: [
+{ “product”: “Startup”, “revenue”: 350000, “growth”: 15 },
+{ “product”: “SMB”, “revenue”: 420000, “growth”: 10 },
+{ “product”: “Enterprise”, “revenue”: 480000, “growth”: 6 }
+],
+“semantic”: { “processStep”: 0, “segment”: null, “detailLevel”: 1 },
+“parentId”: “overview”,
+“processLabel”: “Revenue”
 }
-\`\`\`
+]
 
-# Key Principles
+⸻
 
-1. **IDs can be from input OR created by you** - Use input chart IDs where relevant, but create new IDs for custom views
-2. **Think about the user's journey** - What do they see first? What would they click next?
-3. **Semantic parameters define relationships** - Use them to build logical drill-down paths
-4. **detailLevel drives hierarchy**:
-   - 0 = Top-level overview (broad question)
-   - 1 = Process-level (specific business function)
-   - 2 = Segment-level (customer type focus)
-   - 3 = Detailed breakdown (sources, stages, accounts)
-5. **parentId creates navigation** - Each child should reference its logical parent
+Example 2
 
-Remember: You are designing an intelligent data exploration experience, not just listing charts!`;
+User Query:
+“Analyze marketing to revenue funnel for Startup segment.”
+
+Expected Output:
+
+[
+{
+“id”: “summary”,
+“title”: “Startup Funnel Summary”,
+“chartType”: “kpi”,
+“size”: { “width”: 4, “height”: 2.5 },
+“data”: [
+{ “label”: “Marketing Spend”, “value”: 120000, “unit”: “$”, “trend”: 5, “trendDirection”: “up” },
+{ “label”: “Revenue”, “value”: 280000, “unit”: “$”, “trend”: 9, “trendDirection”: “up” }
+],
+“semantic”: { “processStep”: 1, “segment”: null, “detailLevel”: 0 },
+“processLabel”: “Startup Funnel”
+},
+{
+“id”: “marketing”,
+“title”: “Startup Marketing”,
+“chartType”: “bar”,
+“size”: { “width”: 3, “height”: 2 },
+“data”: [
+{ “product”: “Digital Ads”, “revenue”: 60000, “growth”: 8 },
+{ “product”: “Events”, “revenue”: 40000, “growth”: 4 },
+{ “product”: “Organic”, “revenue”: 20000, “growth”: 6 }
+],
+“semantic”: { “processStep”: 0, “segment”: 0, “detailLevel”: 1 },
+“parentId”: “summary”,
+“segmentLabel”: “Startup”,
+“processLabel”: “Marketing”
+},
+{
+“id”: “funnel”,
+“title”: “Startup Conversion Funnel”,
+“chartType”: “funnel”,
+“size”: { “width”: 2.5, “height”: 2.5 },
+“data”: [
+{ “stage”: “Visitors”, “count”: 50000, “conversionRate”: 100 },
+{ “stage”: “Leads”, “count”: 8000, “conversionRate”: 16 },
+{ “stage”: “Opportunities”, “count”: 1200, “conversionRate”: 15 },
+{ “stage”: “Closed Won”, “count”: 240, “conversionRate”: 20 }
+],
+“semantic”: { “processStep”: 1, “segment”: 0, “detailLevel”: 1 },
+“parentId”: “summary”,
+“segmentLabel”: “Startup”,
+“processLabel”: “Funnel”
+}
+]
+
+⸻
+
+Example 3
+
+User Query:
+“Show churn trends for all segments.”
+
+Expected Output:
+
+[
+{
+“id”: “churn-summary”,
+“title”: “Overall Churn Overview”,
+“chartType”: “kpi”,
+“size”: { “width”: 4, “height”: 2.5 },
+“data”: [
+{ “label”: “Average Churn”, “value”: 3.9, “unit”: “%”, “trend”: -0.5, “trendDirection”: “down” }
+],
+“semantic”: { “processStep”: 0, “segment”: null, “detailLevel”: 0 },
+“processLabel”: “Retention”
+},
+{
+“id”: “churn-segment”,
+“title”: “Churn by Segment”,
+“chartType”: “bar”,
+“size”: { “width”: 3, “height”: 2 },
+“data”: [
+{ “product”: “Startup”, “revenue”: 5.2, “growth”: -0.3 },
+{ “product”: “SMB”, “revenue”: 3.1, “growth”: -0.5 },
+{ “product”: “Enterprise”, “revenue”: 2.4, “growth”: -0.2 }
+],
+“semantic”: { “processStep”: 0, “segment”: null, “detailLevel”: 1 },
+“parentId”: “churn-summary”,
+“processLabel”: “Retention”
+}
+]
+
+⸻
+
+FINAL INSTRUCTION
+
+Return ONLY the JSON array.
+No markdown.
+No explanation.
+No extra text.`;
   }
 
   /**
    * Builds the user-specific prompt with query and chart data.
    */
   private buildUserVisualizationPrompt(query: string, charts: any[]): string {
-    const chartSummaries = charts
+    const available_data = charts
       .map((c, idx) => {
         const dataPreview = c.chart?.data
           ? JSON.stringify(c.chart.data.slice(0, 3))
@@ -718,51 +646,14 @@ Remember: You are designing an intelligent data exploration experience, not just
       })
       .join('\n\n');
 
-    return `# User Query
-"${query}"
+    return `User Query:
+${query}
 
-# Available Chart Data (${charts.length} sources)
+Available Structured Data:
+${available_data}
 
-${chartSummaries}
+Generate the visualization JSON array following all system rules.
 
-# Your Task: Intelligent Drill-Down Design
-
-**Step 1: Analyze the Question**
-- What is the user trying to understand?
-- What metrics are most relevant to their question?
-- What level of detail makes sense to start with?
-
-**Step 2: Review the Data**
-- Look at the actual values in each chart
-- Identify interesting patterns, trends, or anomalies
-- Think about what comparisons would be valuable
-
-**Step 3: Design the Hierarchy**
-- Create an overview visualization that answers the main question
-- Design drill-down views that provide deeper insights
-- Use semantic parameters to define logical relationships:
-  * **detailLevel**: Where in the hierarchy (0=overview, 1=process, 2=segment, 3=detail)
-  * **processStep**: Which business function (0=Marketing, 1=Leads, 2=Pipeline, 3=Revenue, 4=Retention, null=multiple)
-  * **segment**: Which customer type (null=all, 0=Startup, 1=SMB, 2=Enterprise)
-  * **parentId**: Which view is this a drill-down from?
-
-**Step 4: Create Visualizations**
-- Generate visualization objects with appropriate IDs (can reuse input IDs or create new ones)
-- Write clear, descriptive titles that explain what each view shows
-- Assign proper chart types based on the data
-- Set grid-based sizing (width: 1-12 columns, height: 2-8 units)
-
-**Step 5: Build Narrative**
-- Write a brief narrative explaining the overall story
-- Extract 3-5 key insights from the actual data values
-- Be specific with numbers and trends
-
-**CRITICAL REQUIREMENTS**:
-1. Use the **actual chart IDs** from the available data when referencing those charts
-2. Every visualization MUST have correct semantic parameters that reflect its logical position
-3. Parent-child relationships (via parentId) must create a navigable drill-down path
-4. Think creatively about how to best answer the user's question
-
-Respond with valid JSON only, following the exact format specified in the system prompt.`;
+Return only valid JSON.`;
   }
 }
