@@ -3,6 +3,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 
+import { LangChainService } from './services/LangChainService';
 import { registry } from './adapters/AdapterRegistry';
 import { ChartService } from './services/ChartService';
 import { createPlatformsRouter } from './routes/platforms.routes';
@@ -18,6 +19,7 @@ app.use(express.json());
 
 // ── Dependency wiring ───────────────────────────────────────────────────────
 const chartService = new ChartService(registry);
+const langChainService = new LangChainService();
 
 // ── Swagger UI ──────────────────────────────────────────────────────────────
 app.use(
@@ -65,6 +67,7 @@ app.get('/', (_req: Request, res: Response) => {
       platforms: 'GET /api/platforms',
       platformById: 'GET /api/platforms/:platformId',
       platformMetadata: 'GET /api/platforms/:platformId/metadata',
+      platformChat: 'POST /api/platforms/:platformId/userquery',
       charts: 'GET /api/platforms/:platformId/charts',
       chartsFiltered:
         'GET /api/platforms/:platformId/charts?detailLevel=<0-3>&processStep=<0-4>&segment=<0-2|-1>&parentId=<id>&chartType=<type>',
@@ -92,7 +95,10 @@ app.get('/', (_req: Request, res: Response) => {
   });
 });
 
-app.use('/api/platforms', createPlatformsRouter(chartService));
+app.use(
+  '/api/platforms',
+  createPlatformsRouter(chartService, langChainService),
+);
 app.use('/api/platforms/:platformId/charts', createChartsRouter(chartService));
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
@@ -127,6 +133,9 @@ app.listen(PORT, () => {
   console.log(`  GET http://localhost:${PORT}/api/platforms/3danalytics`);
   console.log(
     `  GET http://localhost:${PORT}/api/platforms/3danalytics/metadata`,
+  );
+  console.log(
+    `  POST http://localhost:${PORT}/api/platforms/3danalytics/userquery`,
   );
   console.log(
     `  GET http://localhost:${PORT}/api/platforms/3danalytics/charts`,

@@ -1,8 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { ChartService } from '../services/ChartService';
+import { ILangChainService } from '../services/LangChainService';
 import { ApiResponse, PlatformInfo } from '../types/chart.types';
 
-export function createPlatformsRouter(chartService: ChartService): Router {
+export function createPlatformsRouter(
+  chartService: ChartService,
+  langChainService: ILangChainService,
+): Router {
   const router = Router();
 
   /**
@@ -140,6 +144,69 @@ export function createPlatformsRouter(chartService: ChartService): Router {
       data: metadata,
     };
     res.json(response);
+  });
+
+  /**
+   * @swagger
+   * /api/platforms/{platformId}/userquery:
+   *   post:
+   *     summary: Query the platform
+   *     description: Send a query to the platform's AI agent
+   *     tags: [Platforms]
+   *     parameters:
+   *       - in: path
+   *         name: platformId
+   *         required: true
+   *         schema:
+   *           type: string
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               query:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: Success response
+   */
+  router.post('/:platformId/userquery', async (req: Request, res: Response) => {
+    const { platformId } = req.params;
+    const { query } = req.body;
+
+    if (!query) {
+      res.status(400).json({
+        success: false,
+        error: 'Query is required',
+        statusCode: 400,
+      });
+      return;
+    }
+
+    try {
+      // 1. Retrieve metadata from the adapter
+      const metadata = await chartService.getPlatformMetadata(platformId);
+      console.log(
+        `[UserQuery] Metadata for ${platformId}:`,
+        JSON.stringify(metadata, null, 2),
+      );
+
+      // Integration point for LangChain service
+      // const response = await langChainService.chat(query);
+
+      res.json({
+        success: true,
+        data: { query },
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        error: error.message || 'Internal server error',
+        statusCode: 500,
+      });
+    }
   });
 
   return router;
