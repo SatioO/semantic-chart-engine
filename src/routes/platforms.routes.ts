@@ -150,14 +150,25 @@ export function createPlatformsRouter(
    * @swagger
    * /api/platforms/{platformId}/userquery:
    *   post:
-   *     summary: Query the platform with natural language
+   *     summary: Query the platform with natural language (AI-Powered Visualization)
    *     description: |
-   *       Analyzes a natural language query using AI to identify relevant data sources,
-   *       then fetches the complete chart data for all identified sources.
+   *       Revolutionary AI-powered analytics endpoint that transforms natural language queries
+   *       into intelligent, story-driven dashboard layouts.
    *
-   *       The AI considers business context (marketing, leads, pipeline, revenue, retention),
-   *       customer segments (startup, SMB, enterprise), and detail level to select
-   *       the most relevant charts.
+   *       **How it works:**
+   *       1. AI analyzes your query to identify relevant data sources
+   *       2. Fetches all necessary chart data in parallel
+   *       3. AI orchestrates an optimal visualization layout with:
+   *          - Intelligent sizing and positioning
+   *          - Hierarchical drilldown structure
+   *          - Data-driven insights and recommendations
+   *          - Story-driven narrative
+   *
+   *       **Example queries:**
+   *       - "Show me revenue performance across all segments"
+   *       - "How are our startup customers performing in the pipeline?"
+   *       - "Compare marketing efficiency between SMB and Enterprise"
+   *       - "Where are our enterprise leads coming from?"
    *     tags: [Platforms]
    *     parameters:
    *       - in: path
@@ -197,32 +208,90 @@ export function createPlatformsRouter(
    *                   properties:
    *                     query:
    *                       type: string
+   *                       description: Original user query
    *                     reasoning:
    *                       type: string
-   *                       description: AI explanation of why these charts were selected
-   *                     charts:
+   *                       description: AI explanation of data source selection
+   *                     narrative:
+   *                       type: string
+   *                       description: AI-generated story explaining what the hierarchical data shows
+   *                     data:
    *                       type: array
+   *                       description: Hierarchical visualization structure with parent-child relationships
    *                       items:
    *                         type: object
    *                         properties:
    *                           id:
    *                             type: string
-   *                           api:
+   *                             description: Unique chart identifier
+   *                           title:
    *                             type: string
-   *                           chart:
+   *                             description: Display title for the visualization
+   *                           chartType:
+   *                             type: string
+   *                             description: Type of chart (e.g., "bar", "kpi")
+   *                           size:
    *                             type: object
-   *                             description: Full chart object with data payload
-   *                           success:
-   *                             type: boolean
+   *                             description: Grid-based sizing (12-column layout)
+   *                             properties:
+   *                               width:
+   *                                 type: number
+   *                                 description: Column width (1-12)
+   *                               height:
+   *                                 type: number
+   *                                 description: Row height in relative units
+   *                           data:
+   *                             type: array
+   *                             description: Actual chart data with values, labels, and trends
+   *                             items:
+   *                               type: object
+   *                           semantic:
+   *                             type: object
+   *                             description: Semantic metadata for navigation
+   *                             properties:
+   *                               processStep:
+   *                                 type: integer
+   *                                 nullable: true
+   *                                 description: Process level (0=Marketing, 1=Leads, 2=Pipeline, 3=Revenue, 4=Retention, null=Dashboard)
+   *                               segment:
+   *                                 type: integer
+   *                                 nullable: true
+   *                                 description: Customer segment (null=All, 0=Startup, 1=SMB, 2=Enterprise)
+   *                               detailLevel:
+   *                                 type: integer
+   *                                 description: Hierarchy depth (0=Dashboard, 1=Process, 2=Segment, 3=Detail)
+   *                           processLabel:
+   *                             type: string
+   *                             nullable: true
+   *                             description: Human-readable process name
+   *                           parentId:
+   *                             type: string
+   *                             nullable: true
+   *                             description: Parent chart ID for drill-down navigation
+   *                           segmentLabel:
+   *                             type: string
+   *                             nullable: true
+   *                             description: Human-readable segment name
+   *                     keyInsights:
+   *                       type: array
+   *                       description: Top insights discovered by AI from the data
+   *                       items:
+   *                         type: string
    *                     meta:
    *                       type: object
    *                       properties:
    *                         total:
    *                           type: integer
+   *                           description: Total number of charts fetched
    *                         successful:
    *                           type: integer
+   *                           description: Number of successfully fetched charts
    *                         failed:
    *                           type: integer
+   *                           description: Number of failed chart fetches
+   *                         visualizationsGenerated:
+   *                           type: integer
+   *                           description: Number of visualizations in hierarchy
    *       400:
    *         description: Missing or invalid query parameter
    *       404:
@@ -303,18 +372,36 @@ export function createPlatformsRouter(
         `[UserQuery] Successfully fetched ${successfulCharts.length}/${dataSourceSelection.relevantMetadata.length} charts`,
       );
 
-      // 4. Return the selected data sources with their chart data
+      // 4. Use AI to orchestrate an intelligent visualization layout
+      console.log('[UserQuery] Orchestrating visualization layout with AI...');
+      const orchestration = await langChainService.orchestrateVisualization(
+        query,
+        successfulCharts,
+      );
+
+      console.log(
+        `[UserQuery] Generated ${orchestration.data.length} visualizations with ${orchestration.meta.keyInsights?.length || 0} insights`,
+      );
+      console.log(
+        '[UserQuery] Orchestration data:',
+        JSON.stringify(orchestration.data, null, 2),
+      );
+
+      // 5. Return the intelligent visualization structure
       res.json({
         success: true,
         platform: platformId,
         data: {
           query,
           reasoning: dataSourceSelection.reasoning,
-          charts: chartsWithData,
+          narrative: orchestration.meta.narrative,
+          data: orchestration.data,
+          keyInsights: orchestration.meta.keyInsights || [],
           meta: {
             total: chartsWithData.length,
             successful: successfulCharts.length,
             failed: chartsWithData.length - successfulCharts.length,
+            visualizationsGenerated: orchestration.data.length,
           },
         },
       });
