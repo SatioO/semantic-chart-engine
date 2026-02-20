@@ -6,6 +6,8 @@ import {
   PlatformInfo,
   VoiceNavigationRequest,
   VoiceNavigationResponse,
+  IntentClassificationRequest,
+  IntentClassificationResponse,
 } from '../types/chart.types';
 
 export function createPlatformsRouter(
@@ -619,6 +621,176 @@ export function createPlatformsRouter(
         res.json(response);
       } catch (error: any) {
         console.error('[VoiceNavigation] Error:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message || 'Internal server error',
+          statusCode: 500,
+        });
+      }
+    },
+  );
+
+  /**
+   * @swagger
+   * /api/platforms/{platformId}/classify-intent:
+   *   post:
+   *     summary: Classify user query intent as navigation or visualization
+   *     description: |
+   *       AI-powered intent classification endpoint that analyzes a user's query
+   *       and determines whether they want to navigate to a view or analyze data.
+   *
+   *       **Intent Types:**
+   *       - **Navigation**: User wants to navigate/open/go to a specific view
+   *       - **Visualization**: User wants to analyze data, see charts, or get insights
+   *
+   *       **How it works:**
+   *       1. Receives a user query (natural language)
+   *       2. AI analyzes the query using keyword matching and semantic understanding
+   *       3. Classifies as either "navigation" or "visualization"
+   *       4. Returns the intent with confidence score and reasoning
+   *
+   *       **Navigation Keywords:**
+   *       - "open", "go to", "navigate", "show dashboard", "take me to", "switch to", "display"
+   *
+   *       **Example Navigation Queries:**
+   *       - "Open the revenue dashboard"
+   *       - "Go to the marketing section"
+   *       - "Navigate to enterprise analytics"
+   *       - "Show dashboard overview"
+   *
+   *       **Example Visualization Queries:**
+   *       - "Show me revenue performance"
+   *       - "How is our marketing doing?"
+   *       - "What's the churn rate?"
+   *       - "Compare revenue across segments"
+   *     tags: [Platforms]
+   *     parameters:
+   *       - in: path
+   *         name: platformId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           example: 3danalytics
+   *         description: The platform adapter identifier
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - query
+   *             properties:
+   *               query:
+   *                 type: string
+   *                 example: "Show me revenue performance across all segments"
+   *                 description: User's natural language query
+   *           examples:
+   *             navigation:
+   *               summary: Navigation intent example
+   *               value:
+   *                 query: "Open the marketing dashboard"
+   *             visualization:
+   *               summary: Visualization intent example
+   *               value:
+   *                 query: "Show me revenue trends for enterprise customers"
+   *     responses:
+   *       200:
+   *         description: Successfully classified the intent
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 platform:
+   *                   type: string
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     intent:
+   *                       type: string
+   *                       enum: [navigation, visualization]
+   *                       description: The classified intent
+   *                     confidence:
+   *                       type: number
+   *                       description: Confidence score (0-1)
+   *                       minimum: 0
+   *                       maximum: 1
+   *                     reasoning:
+   *                       type: string
+   *                       description: Explanation of why this intent was selected
+   *             examples:
+   *               navigation:
+   *                 summary: Navigation intent response
+   *                 value:
+   *                   success: true
+   *                   platform: 3danalytics
+   *                   data:
+   *                     intent: navigation
+   *                     confidence: 0.95
+   *                     reasoning: "User explicitly wants to open a specific dashboard using the keyword 'open'"
+   *               visualization:
+   *                 summary: Visualization intent response
+   *                 value:
+   *                   success: true
+   *                   platform: 3danalytics
+   *                   data:
+   *                     intent: visualization
+   *                     confidence: 0.85
+   *                     reasoning: "User wants to analyze and view revenue data, not navigate to a view"
+   *       400:
+   *         description: Missing required parameters
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             example:
+   *               success: false
+   *               error: Query is required
+   *               statusCode: 400
+   *       500:
+   *         description: Internal server error
+   */
+  router.post(
+    '/:platformId/classify-intent',
+    async (req: Request, res: Response) => {
+      const { platformId } = req.params;
+      const { query } = req.body as IntentClassificationRequest;
+
+      if (!query) {
+        res.status(400).json({
+          success: false,
+          error: 'Query is required',
+          statusCode: 400,
+        });
+        return;
+      }
+
+      try {
+        console.log(`[IntentClassification] Classifying query: "${query}"`);
+
+        // Use LangChain service to classify the intent
+        const result = await langChainService.classifyIntent(query);
+
+        console.log(
+          `[IntentClassification] Intent: ${result.intent} (confidence: ${result.confidence})`,
+        );
+
+        const response: ApiResponse<IntentClassificationResponse> = {
+          success: true,
+          platform: platformId,
+          data: {
+            intent: result.intent,
+            confidence: result.confidence,
+            reasoning: result.reasoning,
+          },
+        };
+
+        res.json(response);
+      } catch (error: any) {
+        console.error('[IntentClassification] Error:', error);
         res.status(500).json({
           success: false,
           error: error.message || 'Internal server error',

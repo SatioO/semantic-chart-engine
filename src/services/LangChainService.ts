@@ -46,6 +46,12 @@ export interface VoiceNavigationResult {
   reason?: string;
 }
 
+export interface IntentClassificationResult {
+  intent: 'navigation' | 'visualization';
+  confidence: number;
+  reasoning: string;
+}
+
 export interface ILangChainService {
   chat(message: string): Promise<string>;
   identifyDataSources(
@@ -60,6 +66,7 @@ export interface ILangChainService {
     query: string,
     availablePanels: Array<{ id: string; title: string }>,
   ): Promise<VoiceNavigationResult>;
+  classifyIntent(query: string): Promise<IntentClassificationResult>;
 }
 
 export class LangChainService implements ILangChainService {
@@ -258,8 +265,56 @@ export class LangChainService implements ILangChainService {
         };
       }
 
-      console.error('[LangChain] Failed to parse voice navigation response:', error);
+      console.error(
+        '[LangChain] Failed to parse voice navigation response:',
+        error,
+      );
       throw new Error(`Failed to parse voice navigation response: ${content}`);
+    }
+  }
+
+  /**
+   * Classifies the intent of a user query as either "navigation" or "visualization".
+   * Navigation queries are those where users want to navigate to a specific view/dashboard.
+   * Visualization queries are those where users want to analyze data or see charts.
+   */
+  async classifyIntent(query: string): Promise<IntentClassificationResult> {
+    const systemPrompt = this.buildIntentClassificationPrompt();
+
+    const messages = [new SystemMessage(systemPrompt), new HumanMessage(query)];
+
+    const response = await this.model.invoke(messages);
+    const content = response.content.toString();
+
+    console.log('[LangChain] Intent Classification Response:', content);
+
+    try {
+      const parsed = JSON.parse(content);
+
+      return {
+        intent: parsed.intent,
+        confidence: parsed.confidence,
+        reasoning: parsed.reasoning,
+      };
+    } catch (error) {
+      // Try to extract JSON from the response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          intent: parsed.intent,
+          confidence: parsed.confidence,
+          reasoning: parsed.reasoning,
+        };
+      }
+
+      console.error(
+        '[LangChain] Failed to parse intent classification response:',
+        error,
+      );
+      throw new Error(
+        `Failed to parse intent classification response: ${content}`,
+      );
     }
   }
 
@@ -523,16 +578,19 @@ GLOBAL RULES
 
 ⸻
 
-CHART DATA STRUCTURE ENFORCEMENT (MANDATORY)
+⸻
 
-You MUST strictly conform to the following chart data contracts.
+CHART DATA STRUCTURE ENFORCEMENT (STRICT)
 
-These are pure visualization contracts.
-They define what shape the chart data MUST follow.
+You MUST strictly conform to the following visualization contracts.
 
-You are NOT allowed to invent fields.
-You are NOT allowed to rename fields.
-You are NOT allowed to mix formats between chart types.
+These are pure frontend chart data contracts.
+You are NOT allowed to:
+	•	Invent fields
+	•	Rename fields
+	•	Mix formats between chart types
+	•	Add units
+	•	Add raw numeric KPI values
 
 ⸻
 
@@ -558,8 +616,9 @@ color: string
 
 Rules:
 	•	value MUST be pre-formatted (e.g. “$45.2k”, “12.4%”, “1,234”)
+	•	DO NOT output numeric raw values
+	•	DO NOT include unit fields
 	•	trend is optional
-	•	DO NOT output numeric raw values here
 
 ⸻
 
@@ -579,7 +638,6 @@ color?: string
 
 Rules:
 	•	value MUST be numeric
-	•	label represents x-axis
 	•	No additional fields allowed
 
 ⸻
@@ -619,8 +677,6 @@ Rules:
 
 data MUST be:
 
-AreaChartData
-
 {
 points: [
 { x: string, y: number }
@@ -635,6 +691,7 @@ color?: string
 Rules:
 	•	y MUST be numeric
 	•	referenceLine optional
+	•	No extra fields
 
 ⸻
 
@@ -658,7 +715,7 @@ Rules:
 
 6️⃣ chartType: “churn”
 
-data MUST follow AreaChartData structure.
+data MUST follow the SAME structure as chartType “area”.
 
 ⸻
 
@@ -666,11 +723,15 @@ STRICT VALIDATION RULES
 	•	DO NOT mix data contracts.
 	•	DO NOT add custom keys.
 	•	DO NOT include transformation metadata.
-	•	DO NOT include business schema.
 	•	Only output visualization-ready data.
-	•	If a chartType requires a specific contract, you MUST follow it exactly.
+	•	All numeric fields must be internally consistent.
+	•	If a chartType cannot represent the query exactly, choose the closest valid type.
 
-If you cannot map the requested visualization to one of the allowed contracts, choose the closest valid chart type.
+If either:
+	1.	Semantic coordinate system is violated
+	2.	Chart data contract is violated
+
+The output is INVALID.
 
 ⸻
 
@@ -998,5 +1059,155 @@ Response:
 }
 
 Now, analyze the user's voice query and respond with the matching panel in JSON format.`;
+  }
+
+  /**
+   * Builds the system prompt for intent classification.
+   * This prompt instructs the AI to classify queries as navigation or visualization.
+   */
+  private buildIntentClassificationPrompt(): string {
+    return `You are an intent classification assistant for a business analytics platform. Your task is to analyze user queries and classify them into one of two intents:
+
+# Intent Types
+
+## 1. NAVIGATION
+Queries where the user wants to navigate to a specific view, dashboard, or section of the application.
+
+**Navigation Keywords:**
+- "open"
+- "go to"
+- "navigate"
+- "show dashboard"
+- "take me to"
+- "switch to"
+- "display"
+
+**Navigation Examples:**
+- "Open the revenue dashboard"
+- "Go to the marketing section"
+- "Navigate to enterprise analytics"
+- "Show dashboard overview"
+- "Take me to the sales funnel"
+- "Switch to the retention view"
+- "Display the startup panel"
+
+## 2. VISUALIZATION
+Queries where the user wants to analyze data, see charts, understand metrics, or get insights.
+
+**Visualization Examples:**
+- "Show me revenue performance"
+- "How is our marketing doing?"
+- "What's the churn rate?"
+- "Compare revenue across segments"
+- "Analyze the conversion funnel"
+- "What are the key metrics?"
+- "How are startups performing?"
+- "Show revenue trends"
+
+# Classification Rules
+
+1. **Navigation Intent:**
+   - User explicitly wants to navigate/open/go to a specific view
+   - Focus is on changing the current view or location
+   - Action-oriented language (open, navigate, switch, display)
+
+2. **Visualization Intent:**
+   - User wants to see data, charts, or analytics
+   - Focus is on understanding metrics or getting insights
+   - Analysis-oriented language (show me, how is, what's, analyze, compare)
+   - DEFAULT INTENT: If unclear, choose visualization
+
+3. **Confidence Scoring:**
+   - 0.9-1.0: Very clear intent with explicit keywords
+   - 0.7-0.9: Clear intent based on context
+   - 0.5-0.7: Moderate confidence, some ambiguity
+   - Below 0.5: Low confidence, difficult to classify
+
+# Response Format
+
+You MUST respond with valid JSON only, in this exact format:
+
+{
+  "intent": "navigation" | "visualization",
+  "confidence": 0.95,
+  "reasoning": "Brief explanation of why this intent was selected"
+}
+
+# Important Guidelines
+
+- Be precise in classification
+- Consider the primary action the user wants to take
+- When in doubt, default to "visualization"
+- No explanations outside JSON
+- Always provide confidence score between 0 and 1
+- Reasoning should be concise (1 sentence)
+
+# Classification Examples
+
+Query: "Open the marketing dashboard"
+Response:
+{
+  "intent": "navigation",
+  "confidence": 0.95,
+  "reasoning": "User explicitly wants to open a specific dashboard using the keyword 'open'"
+}
+
+Query: "Go to the revenue section"
+Response:
+{
+  "intent": "navigation",
+  "confidence": 0.90,
+  "reasoning": "User wants to navigate to a specific section using 'go to' keyword"
+}
+
+Query: "Show me the enterprise revenue performance"
+Response:
+{
+  "intent": "visualization",
+  "confidence": 0.85,
+  "reasoning": "User wants to analyze and view revenue data, not navigate to a view"
+}
+
+Query: "How are we doing on leads?"
+Response:
+{
+  "intent": "visualization",
+  "confidence": 0.80,
+  "reasoning": "User asking for data analysis and insights, not navigation"
+}
+
+Query: "Navigate to startup analytics"
+Response:
+{
+  "intent": "navigation",
+  "confidence": 0.95,
+  "reasoning": "Explicit navigation request using 'navigate to' keyword"
+}
+
+Query: "What's our churn rate for SMB customers?"
+Response:
+{
+  "intent": "visualization",
+  "confidence": 0.85,
+  "reasoning": "User seeking specific metric analysis, not navigation"
+}
+
+Query: "Compare revenue across all segments"
+Response:
+{
+  "intent": "visualization",
+  "confidence": 0.90,
+  "reasoning": "User wants data comparison and analysis, not navigation"
+}
+
+Query: "Take me to the conversion funnel"
+Response:
+{
+  "intent": "navigation",
+  "confidence": 0.90,
+  "reasoning": "User wants to navigate to a specific view using 'take me to'"
+}
+
+Now, analyze the user's query and respond with the intent classification in JSON format.`;
   }
 }

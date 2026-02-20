@@ -165,3 +165,15 @@ export interface VoiceNavigationResponse {
   confidence?: number;
   reason?: string;
 }
+
+// ── Intent Classification types ─────────────────────────────────────────────
+
+export interface IntentClassificationRequest {
+  query: string;
+}
+
+export interface IntentClassificationResponse {
+  intent: 'navigation' | 'visualization';
+  confidence: number;
+  reasoning: string;
+}
