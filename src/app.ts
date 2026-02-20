@@ -11,7 +11,7 @@ import { createChartsRouter } from './routes/charts.routes';
 import { swaggerSpec } from './swagger';
 
 const app: Application = express();
-const PORT = process.env.PORT ?? 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors());
@@ -122,8 +122,9 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 // ── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\nSemantic Chart Engine running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\nSemantic Chart Engine running on http://0.0.0.0:${PORT}`);
+  console.log(`Local access: http://localhost:${PORT}`);
   console.log(`Registered platforms: ${registry.listPlatformIds().join(', ')}`);
   console.log(`\nSwagger UI: http://localhost:${PORT}/api/docs`);
   console.log(`OpenAPI spec: http://localhost:${PORT}/api/docs.json`);
