@@ -1,6 +1,7 @@
 import { AdapterRegistry } from '../adapters/AdapterRegistry';
 import {
   Chart,
+  ChartDataEssentials,
   ChartFilterOptions,
   ChartSummary,
   PlatformInfo,
@@ -62,6 +63,37 @@ export class ChartService {
     const adapter = this.registry.get(platformId);
     if (!adapter) return null;
     return adapter.getChartById(chartId);
+  }
+
+  /**
+   * Returns only the data array for a given chart id.
+   * Returns null if the platform is not registered or the chart does not exist.
+   */
+  async getChartData(
+    platformId: string,
+    chartId: string,
+  ): Promise<Chart['data'] | null> {
+    const chart = await this.getChart(platformId, chartId);
+    if (!chart) return null;
+    return chart.data;
+  }
+
+  /**
+   * Returns essential chart info (id, title, chartType, data) without semantic metadata.
+   * Returns null if the platform is not registered or the chart does not exist.
+   */
+  async getChartDataEssentials(
+    platformId: string,
+    chartId: string,
+  ): Promise<ChartDataEssentials | null> {
+    const chart = await this.getChart(platformId, chartId);
+    if (!chart) return null;
+    return {
+      id: chart.id,
+      title: chart.title,
+      chartType: chart.chartType,
+      data: chart.data,
+    };
   }
 
   // ── Hierarchy ────────────────────────────────────────────────────────────

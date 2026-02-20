@@ -153,6 +153,69 @@ export function createPlatformsRouter(
 
   /**
    * @swagger
+   * /api/platforms/{platformId}/charts/{chartId}/data:
+   *   get:
+   *     summary: Get raw chart data by ID
+   *     description: Returns only the data array for a specific chart, without semantic metadata or other chart properties.
+   *     tags: [Charts]
+   *     parameters:
+   *       - in: path
+   *         name: platformId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           example: 3danalytics
+   *         description: The platform adapter identifier
+   *       - in: path
+   *         name: chartId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           example: revenue-startup
+   *         description: The chart identifier
+   *     responses:
+   *       200:
+   *         description: Raw chart data array
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 platform:
+   *                   type: string
+   *                 data:
+   *                   type: array
+   *                   description: The raw chart data
+   *       404:
+   *         description: Chart not found
+   */
+  router.get(
+    '/:platformId/charts/:chartId/data',
+    async (req: Request, res: Response) => {
+      const { platformId, chartId } = req.params;
+      const chart = await chartService.getChart(platformId, chartId);
+
+      if (!chart) {
+        res.status(404).json({
+          success: false,
+          error: `Chart "${chartId}" not found on platform "${platformId}"`,
+          statusCode: 404,
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        platform: platformId,
+        data: chart.data,
+      });
+    },
+  );
+
+  /**
+   * @swagger
    * /api/platforms/{platformId}/userquery:
    *   post:
    *     summary: Query the platform with natural language (AI-Powered Visualization)
@@ -343,32 +406,32 @@ export function createPlatformsRouter(
         dataSourceSelection.relevantMetadata.map((m: any) => m.id),
       );
 
-      // 3. Fetch actual chart data for all identified data sources in parallel
-      // Using Promise.allSettled to handle individual failures gracefully
-      const chartPromises = dataSourceSelection.relevantMetadata.map(
+      // 3. Fetch essential chart data (id, title, chartType, data) for all identified data sources
+      // Using getChartDataEssentials which excludes semantic metadata
+      const dataPromises = dataSourceSelection.relevantMetadata.map(
         (dataSource: any) =>
           chartService
-            .getChart(platformId, dataSource.id)
-            .then((chart) => ({
+            .getChartDataEssentials(platformId, dataSource.id)
+            .then((chartData) => ({
               ...dataSource,
-              chart,
-              success: chart !== null,
+              chartData,
+              success: chartData !== null,
             }))
             .catch((error: any) => {
               console.error(
-                `[UserQuery] Error fetching chart ${dataSource.id}:`,
+                `[UserQuery] Error fetching data for ${dataSource.id}:`,
                 error.message,
               );
               return {
                 ...dataSource,
-                chart: null,
+                chartData: null,
                 success: false,
                 error: error.message,
               };
             }),
       );
 
-      const chartsWithData = await Promise.all(chartPromises);
+      const chartsWithData = await Promise.all(dataPromises);
 
       // Filter out any failed fetches (optional - you can keep them to show errors)
       const successfulCharts = chartsWithData.filter((c) => c.success);

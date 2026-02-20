@@ -90,6 +90,14 @@ export interface Chart {
   segmentLabel?: string;
 }
 
+/** Essential chart data for AI visualization - excludes semantic metadata */
+export interface ChartDataEssentials {
+  id: string;
+  title: string;
+  chartType: ChartType;
+  data: ChartDataItem[];
+}
+
 /** Lightweight summary — data payload excluded */
 export interface ChartSummary {
   id: string;

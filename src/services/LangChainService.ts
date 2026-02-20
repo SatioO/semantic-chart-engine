@@ -889,12 +889,12 @@ No extra text.`;
   private buildUserVisualizationPrompt(query: string, charts: any[]): string {
     const available_data = charts
       .map((c, idx) => {
-        const dataPreview = c.chart?.data
-          ? JSON.stringify(c.chart.data.slice(0, 3))
+        const dataPreview = c.chartData?.data
+          ? JSON.stringify(c.chartData.data.slice(0, 3))
           : 'No data';
         return `${idx + 1}. ID: ${c.id}
-   Chart Type: ${c.chart?.chartType || 'unknown'}
-   Title: ${c.chart?.title || 'Untitled'}
+   Chart Type: ${c.chartData?.chartType || 'unknown'}
+   Title: ${c.chartData?.title || 'Untitled'}
    Data Preview: ${dataPreview}`;
       })
       .join('\n\n');
