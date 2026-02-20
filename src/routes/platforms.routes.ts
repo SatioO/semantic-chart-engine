@@ -1,7 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { ChartService } from '../services/ChartService';
 import { ILangChainService } from '../services/LangChainService';
-import { ApiResponse, PlatformInfo } from '../types/chart.types';
+import {
+  ApiResponse,
+  PlatformInfo,
+  VoiceNavigationRequest,
+  VoiceNavigationResponse,
+} from '../types/chart.types';
 
 export function createPlatformsRouter(
   chartService: ChartService,
@@ -414,6 +419,151 @@ export function createPlatformsRouter(
       });
     }
   });
+
+  /**
+   * @swagger
+   * /api/platforms/{platformId}/navigate-by-voice:
+   *   post:
+   *     summary: Navigate to a panel using voice/natural language query
+   *     description: |
+   *       AI-powered voice navigation endpoint that analyzes a user's voice query
+   *       and identifies which panel they want to navigate to from the available panels.
+   *
+   *       **How it works:**
+   *       1. Receives a voice transcript/query and list of available panels
+   *       2. AI analyzes the query to understand user intent
+   *       3. Matches the intent to the most relevant panel
+   *       4. Returns the panel ID with confidence score and reasoning
+   *
+   *       **Example queries:**
+   *       - "Show me the revenue overview"
+   *       - "Take me to marketing"
+   *       - "How are enterprise customers doing?"
+   *       - "I want to see the funnel"
+   *     tags: [Platforms]
+   *     parameters:
+   *       - in: path
+   *         name: platformId
+   *         required: true
+   *         schema:
+   *           type: string
+   *           example: 3danalytics
+   *         description: The platform adapter identifier
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - query
+   *               - availablePanels
+   *             properties:
+   *               query:
+   *                 type: string
+   *                 example: "Show me the revenue overview"
+   *                 description: Voice transcript or natural language query
+   *               availablePanels:
+   *                 type: array
+   *                 description: List of currently available panels on the dashboard
+   *                 items:
+   *                   type: object
+   *                   required:
+   *                     - id
+   *                     - title
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       example: "revenue-overview"
+   *                     title:
+   *                       type: string
+   *                       example: "Revenue Overview"
+   *     responses:
+   *       200:
+   *         description: Successfully identified the target panel
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                 platform:
+   *                   type: string
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     panelId:
+   *                       type: string
+   *                       description: The ID of the matched panel
+   *                     confidence:
+   *                       type: number
+   *                       description: Confidence score (0-1) of the match
+   *                     reason:
+   *                       type: string
+   *                       description: Explanation of why this panel was selected
+   *       400:
+   *         description: Missing required parameters
+   *       500:
+   *         description: Internal server error
+   */
+  router.post(
+    '/:platformId/navigate-by-voice',
+    async (req: Request, res: Response) => {
+      const { platformId } = req.params;
+      const { query, availablePanels } = req.body as VoiceNavigationRequest;
+
+      if (!query) {
+        res.status(400).json({
+          success: false,
+          error: 'Query is required',
+          statusCode: 400,
+        });
+        return;
+      }
+
+      if (!availablePanels || !Array.isArray(availablePanels) || availablePanels.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: 'availablePanels array is required and must not be empty',
+          statusCode: 400,
+        });
+        return;
+      }
+
+      try {
+        console.log(
+          `[VoiceNavigation] Query: "${query}" with ${availablePanels.length} available panels`,
+        );
+
+        // Use LangChain service to identify the target panel
+        const result = await langChainService.navigateByVoice(query, availablePanels);
+
+        console.log(
+          `[VoiceNavigation] Matched panel: ${result.panelId} (confidence: ${result.confidence})`,
+        );
+
+        const response: ApiResponse<VoiceNavigationResponse> = {
+          success: true,
+          platform: platformId,
+          data: {
+            panelId: result.panelId,
+            confidence: result.confidence,
+            reason: result.reason,
+          },
+        };
+
+        res.json(response);
+      } catch (error: any) {
+        console.error('[VoiceNavigation] Error:', error);
+        res.status(500).json({
+          success: false,
+          error: error.message || 'Internal server error',
+          statusCode: 500,
+        });
+      }
+    },
+  );
 
   return router;
 }

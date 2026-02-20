@@ -40,6 +40,12 @@ export interface VisualizationOrchestration {
   };
 }
 
+export interface VoiceNavigationResult {
+  panelId: string;
+  confidence?: number;
+  reason?: string;
+}
+
 export interface ILangChainService {
   chat(message: string): Promise<string>;
   identifyDataSources(
@@ -50,6 +56,10 @@ export interface ILangChainService {
     query: string,
     charts: any[],
   ): Promise<VisualizationOrchestration>;
+  navigateByVoice(
+    query: string,
+    availablePanels: Array<{ id: string; title: string }>,
+  ): Promise<VoiceNavigationResult>;
 }
 
 export class LangChainService implements ILangChainService {
@@ -208,6 +218,48 @@ export class LangChainService implements ILangChainService {
       throw new Error(
         `Failed to parse visualization orchestration: ${content}`,
       );
+    }
+  }
+
+  /**
+   * Analyzes a voice query and identifies which panel the user is referring to.
+   * Returns the panelId, confidence score, and reasoning.
+   */
+  async navigateByVoice(
+    query: string,
+    availablePanels: Array<{ id: string; title: string }>,
+  ): Promise<VoiceNavigationResult> {
+    const systemPrompt = this.buildVoiceNavigationPrompt(availablePanels);
+
+    const messages = [new SystemMessage(systemPrompt), new HumanMessage(query)];
+
+    const response = await this.model.invoke(messages);
+    const content = response.content.toString();
+
+    console.log('[LangChain] Voice Navigation Response:', content);
+
+    try {
+      const parsed = JSON.parse(content);
+
+      return {
+        panelId: parsed.panelId,
+        confidence: parsed.confidence,
+        reason: parsed.reason,
+      };
+    } catch (error) {
+      // Try to extract JSON from the response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          panelId: parsed.panelId,
+          confidence: parsed.confidence,
+          reason: parsed.reason,
+        };
+      }
+
+      console.error('[LangChain] Failed to parse voice navigation response:', error);
+      throw new Error(`Failed to parse voice navigation response: ${content}`);
     }
   }
 
@@ -856,5 +908,95 @@ ${available_data}
 Generate the visualization JSON array following all system rules.
 
 Return only valid JSON.`;
+  }
+
+  /**
+   * Builds the system prompt for voice-based panel navigation.
+   * This prompt instructs the AI to match user voice queries to available panels.
+   */
+  private buildVoiceNavigationPrompt(
+    availablePanels: Array<{ id: string; title: string }>,
+  ): string {
+    const panelList = availablePanels
+      .map((p) => `  - ID: "${p.id}" | Title: "${p.title}"`)
+      .join('\n');
+
+    return `You are a voice navigation assistant for a business analytics dashboard. Your task is to analyze a user's voice query and identify which panel they want to navigate to.
+
+# Available Panels
+
+The following panels are currently available on the dashboard:
+
+${panelList}
+
+# Your Task
+
+Analyze the user's voice query and determine which panel they are referring to. Consider:
+
+1. **Exact matches**: User mentions the panel title directly
+2. **Semantic matches**: User describes what they want to see (e.g., "show me revenue" → panel with "Revenue" in title)
+3. **Partial matches**: User mentions keywords that appear in panel titles
+4. **Intent matching**: User describes their goal (e.g., "how are startups doing" → Startup-related panels)
+
+# Response Format
+
+You MUST respond with valid JSON only, in this exact format:
+
+{
+  "panelId": "the-panel-id",
+  "confidence": 0.95,
+  "reason": "Brief explanation of why this panel was selected"
+}
+
+# Confidence Guidelines
+
+- **0.9 - 1.0**: Exact or near-exact match (user mentioned panel title directly)
+- **0.7 - 0.9**: Strong semantic match (clear intent maps to specific panel)
+- **0.5 - 0.7**: Moderate match (some keywords match, but ambiguous)
+- **Below 0.5**: Weak match (best guess when no clear match exists)
+
+# Important Rules
+
+1. **Always return a panel**: Even if the match is weak, return the best matching panel
+2. **Be generous with matching**: Voice queries are often imprecise, so match intent over exact words
+3. **Consider context**: "Marketing" could match "Marketing Overview", "Marketing Startup", etc.
+4. **Prioritize specificity**: If user says "startup marketing", prefer "Marketing Startup" over "Marketing Overview"
+5. **No explanations outside JSON**: Your entire response must be valid JSON
+
+# Examples
+
+Query: "Show me the revenue overview"
+Response:
+{
+  "panelId": "revenue-overview",
+  "confidence": 0.95,
+  "reason": "User explicitly requested revenue overview"
+}
+
+Query: "How are enterprise customers doing?"
+Response:
+{
+  "panelId": "enterprise-summary",
+  "confidence": 0.85,
+  "reason": "User asked about enterprise customers, matched to enterprise summary panel"
+}
+
+Query: "Take me to the funnel"
+Response:
+{
+  "panelId": "conversion-funnel",
+  "confidence": 0.90,
+  "reason": "User requested funnel view"
+}
+
+Query: "I want to see marketing spend"
+Response:
+{
+  "panelId": "marketing",
+  "confidence": 0.80,
+  "reason": "User wants to see marketing data, marketing panel likely contains spend information"
+}
+
+Now, analyze the user's voice query and respond with the matching panel in JSON format.`;
   }
 }

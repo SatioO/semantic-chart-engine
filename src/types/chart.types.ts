@@ -144,3 +144,16 @@ export interface ApiError {
   error: string;
   statusCode: number;
 }
+
+// ── Voice Navigation types ──────────────────────────────────────────────────
+
+export interface VoiceNavigationRequest {
+  query: string;
+  availablePanels: Array<{ id: string; title: string }>;
+}
+
+export interface VoiceNavigationResponse {
+  panelId: string;
+  confidence?: number;
+  reason?: string;
+}
