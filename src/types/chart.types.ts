@@ -1,5 +1,5 @@
 // ── Chart types present in the 3DAnalytics data ────────────────────────────
-export type ChartType = 'kpi' | 'bar' | 'funnel' | 'revenue' | 'churn';
+export type ChartType = 'kpi' | 'bar' | 'funnel' | 'revenue' | 'churn' | 'stackedbar';
 
 export type TrendDirection = 'up' | 'down' | 'flat';
 
@@ -45,12 +45,39 @@ export interface ChurnDataItem {
   churned: number;
 }
 
+/** Single bar in a stacked bar chart */
+export interface StackedBarPoint {
+  /** X-axis label (category, date, etc.) */
+  x: string;
+  /** Y-values for each stacked series (key = series name, value = numeric value) */
+  [seriesKey: string]: string | number;
+}
+
+/** Configuration for a stacked bar series */
+export interface StackedBarSeries {
+  /** Data key to extract y-value from StackedBarPoint */
+  key: string;
+  /** Display label for legend */
+  label: string;
+  /** Segment color (hex or CSS color) */
+  color: string;
+}
+
+/** Used by chartType: "stackedbar" */
+export interface StackedBarChartData {
+  /** Array of data points with x and series values */
+  points: StackedBarPoint[];
+  /** Series configuration (which segments to render and their styling) */
+  series: StackedBarSeries[];
+}
+
 export type ChartDataItem =
   | KpiDataItem
   | BarDataItem
   | FunnelDataItem
   | RevenueDataItem
-  | ChurnDataItem;
+  | ChurnDataItem
+  | StackedBarChartData;
 
 // ── Semantic metadata ────────────────────────────────────────────────────────
 

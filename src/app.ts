@@ -89,7 +89,7 @@ app.get('/', (_req: Request, res: Response) => {
         1: 'SMB',
         2: 'Enterprise',
       },
-      chartType: ['kpi', 'bar', 'funnel', 'revenue', 'churn'],
+      chartType: ['kpi', 'bar', 'stackedbar', 'funnel', 'revenue', 'churn'],
     },
     registeredPlatforms: registry.listPlatformIds(),
   });

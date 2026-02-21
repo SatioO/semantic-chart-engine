@@ -713,9 +713,45 @@ Rules:
 
 ⸻
 
-6️⃣ chartType: “churn”
+6️⃣ chartType: "churn"
 
-data MUST follow the SAME structure as chartType “area”.
+data MUST follow the SAME structure as chartType "area".
+
+⸻
+
+7️⃣ chartType: "stackedbar"
+
+data MUST be:
+
+{
+points: StackedBarPoint[],
+series: StackedBarSeries[]
+}
+
+StackedBarPoint MUST follow:
+
+{
+x: string,
+[seriesKey: string]: string | number
+}
+
+StackedBarSeries MUST follow:
+
+{
+key: string,
+label: string,
+color: string
+}
+
+Rules:
+	•	Each StackedBarSeries.key MUST match a key inside StackedBarPoint
+	•	points array contains the data for each bar (x-axis category)
+	•	Each point has an x value (category/label) and values for each series
+	•	series array defines which segments to stack and their styling
+	•	x is required and must be a string
+	•	Series values in points must be numeric
+	•	No extra fields allowed
+	•	Use for showing breakdown/composition of categories across multiple segments
 
 ⸻
 
@@ -760,11 +796,12 @@ If either is violated, the output is invalid.
 
 CHART TYPE SELECTION
 
-“kpi” → summaries
-“bar” → segment comparison
-“funnel” → stage transition
-“revenue” → time-series progression
-“churn” → retention
+"kpi" → summaries
+"bar" → segment comparison
+"stackedbar" → segment breakdown/composition across categories
+"funnel" → stage transition
+"revenue" → time-series progression
+"churn" → retention
 
 ⸻
 
