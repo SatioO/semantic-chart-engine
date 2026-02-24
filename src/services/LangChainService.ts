@@ -554,6 +554,8 @@ GLOBAL RULES
 	•	Contain KPI-style aggregated metrics
 	2.	Horizontal (X) Rules:
 	•	Sequential / causal stages must increase processStep
+	•	Different metrics at the same level = different processStep values
+	•	Example: Pipeline (processStep: 0), Revenue (processStep: 1), Churn (processStep: 2)
 	3.	Vertical (Y) Rules:
 	•	Parallel segments share same processStep and detailLevel
 	•	Use numeric segment indexes (0,1,2…)
@@ -562,14 +564,21 @@ GLOBAL RULES
 	•	Higher detailLevel = deeper drill-down
 	•	Children must reference parentId
 	•	Same (processStep, segment), higher detailLevel = drill-down hierarchy
-	5.	parentId:
+	5.	**CRITICAL - NO COORDINATE COLLISIONS**:
+	•	NO TWO PANELS can have identical (processStep, segment, detailLevel)
+	•	If creating multiple sibling panels, use DIFFERENT processStep values
+	•	Example: "Pipeline by Segment" (processStep: 0) vs "Revenue by Segment" (processStep: 1)
+	•	Each unique coordinate triple must map to exactly ONE panel
+	6.	parentId:
 	•	Required for every non-root panel
 	•	Must reference an existing panel id
-	6.	processLabel:
+	7.	processLabel:
 	•	Required on every panel
-	7.	segmentLabel:
+	•	Should reflect the metric or stage (e.g., "Pipeline", "Revenue", "Marketing")
+	8.	segmentLabel:
 	•	Required when segment is not null
-	8.	Do NOT:
+	9.	Do NOT:
+	•	Create duplicate coordinates
 	•	Output explanations
 	•	Output markdown
 	•	Add fields outside schema
@@ -862,95 +871,204 @@ Expected Output:
 
 ⸻
 
-Example 2
+Example 2 - ANTI-COLLISION: Multiple Metrics at Same Level
 
 User Query:
-“Analyze marketing to revenue funnel for Startup segment.”
+"Show me pipeline and revenue breakdown by segment"
 
 Expected Output:
 
 [
 {
-“id”: “summary”,
-“title”: “Startup Funnel Summary”,
-“chartType”: “kpi”,
-“size”: { “width”: 4, “height”: 2.5 },
-“data”: [
-{ “label”: “Marketing Spend”, “value”: 120000, “unit”: “$”, “trend”: 5, “trendDirection”: “up” },
-{ “label”: “Revenue”, “value”: 280000, “unit”: “$”, “trend”: 9, “trendDirection”: “up” }
+"id": "summary",
+"title": "Revenue Engine Overview",
+"chartType": "kpi",
+"size": { "width": 4, "height": 2.5 },
+"data": [
+{ "label": "Total Pipeline", "value": "$274K" },
+{ "label": "Total Revenue", "value": "$284K" }
 ],
-“semantic”: { “processStep”: 1, “segment”: null, “detailLevel”: 0 },
-“processLabel”: “Startup Funnel”
+"semantic": { "processStep": 0, "segment": null, "detailLevel": 0 },
+"processLabel": "Revenue Engine"
 },
 {
-“id”: “marketing”,
-“title”: “Startup Marketing”,
-“chartType”: “bar”,
-“size”: { “width”: 3, “height”: 2 },
-“data”: [
-{ “product”: “Digital Ads”, “revenue”: 60000, “growth”: 8 },
-{ “product”: “Events”, “revenue”: 40000, “growth”: 4 },
-{ “product”: “Organic”, “revenue”: 20000, “growth”: 6 }
+"id": "pipeline-segment",
+"title": "Pipeline by Segment",
+"chartType": "bar",
+"size": { "width": 3, "height": 2 },
+"data": [
+{ "product": "Startup", "revenue": 56873 },
+{ "product": "SMB", "revenue": 85948 },
+{ "product": "Enterprise", "revenue": 141801 }
 ],
-“semantic”: { “processStep”: 0, “segment”: 0, “detailLevel”: 1 },
-“parentId”: “summary”,
-“segmentLabel”: “Startup”,
-“processLabel”: “Marketing”
+"semantic": { "processStep": 0, "segment": null, "detailLevel": 1 },
+"parentId": "summary",
+"processLabel": "Pipeline"
 },
 {
-“id”: “funnel”,
-“title”: “Startup Conversion Funnel”,
-“chartType”: “funnel”,
-“size”: { “width”: 2.5, “height”: 2.5 },
-“data”: [
-{ “stage”: “Visitors”, “count”: 50000, “conversionRate”: 100 },
-{ “stage”: “Leads”, “count”: 8000, “conversionRate”: 16 },
-{ “stage”: “Opportunities”, “count”: 1200, “conversionRate”: 15 },
-{ “stage”: “Closed Won”, “count”: 240, “conversionRate”: 20 }
+"id": "revenue-segment",
+"title": "Revenue by Segment",
+"chartType": "bar",
+"size": { "width": 3, "height": 2 },
+"data": [
+{ "product": "Startup", "revenue": 71259 },
+{ "product": "SMB", "revenue": 99674 },
+{ "product": "Enterprise", "revenue": 114070 }
 ],
-“semantic”: { “processStep”: 1, “segment”: 0, “detailLevel”: 1 },
-“parentId”: “summary”,
-“segmentLabel”: “Startup”,
-“processLabel”: “Funnel”
+"semantic": { "processStep": 1, "segment": null, "detailLevel": 1 },
+"parentId": "summary",
+"processLabel": "Revenue"
 }
 ]
+
+NOTICE: Pipeline uses processStep: 0, Revenue uses processStep: 1
+This prevents coordinate collision even though both have segment: null, detailLevel: 1
+The different processStep values position them horizontally separated on the UI
 
 ⸻
 
 Example 3
 
 User Query:
-“Show churn trends for all segments.”
+"Analyze marketing to revenue funnel for Startup segment."
 
 Expected Output:
 
 [
 {
-“id”: “churn-summary”,
-“title”: “Overall Churn Overview”,
-“chartType”: “kpi”,
-“size”: { “width”: 4, “height”: 2.5 },
-“data”: [
-{ “label”: “Average Churn”, “value”: 3.9, “unit”: “%”, “trend”: -0.5, “trendDirection”: “down” }
+"id": "summary",
+"title": "Startup Funnel Summary",
+"chartType": "kpi",
+"size": { "width": 4, "height": 2.5 },
+"data": [
+{ "label": "Marketing Spend", "value": 120000, "unit": "$", "trend": 5, "trendDirection": "up" },
+{ "label": "Revenue", "value": 280000, "unit": "$", "trend": 9, "trendDirection": "up" }
 ],
-“semantic”: { “processStep”: 0, “segment”: null, “detailLevel”: 0 },
-“processLabel”: “Retention”
+"semantic": { "processStep": 1, "segment": null, "detailLevel": 0 },
+"processLabel": "Startup Funnel"
 },
 {
-“id”: “churn-segment”,
-“title”: “Churn by Segment”,
-“chartType”: “bar”,
-“size”: { “width”: 3, “height”: 2 },
-“data”: [
-{ “product”: “Startup”, “revenue”: 5.2, “growth”: -0.3 },
-{ “product”: “SMB”, “revenue”: 3.1, “growth”: -0.5 },
-{ “product”: “Enterprise”, “revenue”: 2.4, “growth”: -0.2 }
+"id": "marketing",
+"title": "Startup Marketing",
+"chartType": "bar",
+"size": { "width": 3, "height": 2 },
+"data": [
+{ "product": "Digital Ads", "revenue": 60000, "growth": 8 },
+{ "product": "Events", "revenue": 40000, "growth": 4 },
+{ "product": "Organic", "revenue": 20000, "growth": 6 }
 ],
-“semantic”: { “processStep”: 0, “segment”: null, “detailLevel”: 1 },
-“parentId”: “churn-summary”,
-“processLabel”: “Retention”
+"semantic": { "processStep": 0, "segment": 0, "detailLevel": 1 },
+"parentId": "summary",
+"segmentLabel": "Startup",
+"processLabel": "Marketing"
+},
+{
+"id": "funnel",
+"title": "Startup Conversion Funnel",
+"chartType": "funnel",
+"size": { "width": 2.5, "height": 2.5 },
+"data": [
+{ "stage": "Visitors", "count": 50000, "conversionRate": 100 },
+{ "stage": "Leads", "count": 8000, "conversionRate": 16 },
+{ "stage": "Opportunities", "count": 1200, "conversionRate": 15 },
+{ "stage": "Closed Won", "count": 240, "conversionRate": 20 }
+],
+"semantic": { "processStep": 1, "segment": 0, "detailLevel": 1 },
+"parentId": "summary",
+"segmentLabel": "Startup",
+"processLabel": "Funnel"
 }
 ]
+
+⸻
+
+Example 4 - ANTI-COLLISION: Using Segments for Vertical Separation
+
+User Query:
+"Compare revenue performance across all three segments."
+
+Expected Output:
+
+[
+{
+"id": "overall",
+"title": "Overall Revenue",
+"chartType": "kpi",
+"size": { "width": 4, "height": 2.5 },
+"data": [
+{ "label": "Total Revenue", "value": "$284K" }
+],
+"semantic": { "processStep": 0, "segment": null, "detailLevel": 0 },
+"processLabel": "Revenue"
+},
+{
+"id": "startup-revenue",
+"title": "Startup Revenue",
+"chartType": "kpi",
+"size": { "width": 3, "height": 2 },
+"data": [
+{ "label": "Revenue", "value": "$71K" }
+],
+"semantic": { "processStep": 0, "segment": 0, "detailLevel": 1 },
+"parentId": "overall",
+"segmentLabel": "Startup",
+"processLabel": "Revenue"
+},
+{
+"id": "smb-revenue",
+"title": "SMB Revenue",
+"chartType": "kpi",
+"size": { "width": 3, "height": 2 },
+"data": [
+{ "label": "Revenue", "value": "$99K" }
+],
+"semantic": { "processStep": 0, "segment": 1, "detailLevel": 1 },
+"parentId": "overall",
+"segmentLabel": "SMB",
+"processLabel": "Revenue"
+},
+{
+"id": "enterprise-revenue",
+"title": "Enterprise Revenue",
+"chartType": "kpi",
+"size": { "width": 3, "height": 2 },
+"data": [
+{ "label": "Revenue", "value": "$114K" }
+],
+"semantic": { "processStep": 0, "segment": 2, "detailLevel": 1 },
+"parentId": "overall",
+"segmentLabel": "Enterprise",
+"processLabel": "Revenue"
+}
+]
+
+NOTICE: All three segment panels have same processStep: 0 and detailLevel: 1
+But they use DIFFERENT segment values (0, 1, 2) to position them vertically
+This creates a vertical stack on the UI without collision
+
+⸻
+
+COORDINATE SELECTION DECISION TREE
+
+When creating multiple panels at the same level, ask:
+
+1. Are they DIFFERENT STAGES in a process? (e.g., Pipeline → Revenue → Retention)
+   → YES: Use DIFFERENT processStep values (0, 1, 2...)
+   → Example: Pipeline (processStep: 0), Revenue (processStep: 1)
+
+2. Are they DIFFERENT SEGMENTS of the same metric? (e.g., Startup, SMB, Enterprise)
+   → YES: Use DIFFERENT segment values (0, 1, 2...)
+   → Example: Startup (segment: 0), SMB (segment: 1), Enterprise (segment: 2)
+
+3. Are they DIFFERENT METRICS at the same stage? (e.g., Pipeline and Revenue both shown together)
+   → YES: Use DIFFERENT processStep values
+   → Example: Pipeline (processStep: 0), Revenue (processStep: 1)
+
+4. Is it a DRILL-DOWN from parent? (e.g., Overview → Detailed breakdown)
+   → YES: Use HIGHER detailLevel, reference parentId
+   → Example: Parent (detailLevel: 0), Child (detailLevel: 1)
+
+REMEMBER: Every panel needs a UNIQUE (processStep, segment, detailLevel) triple!
 
 ⸻
 
@@ -970,10 +1088,19 @@ Return a JSON object with this structure:
 INSIGHT GUIDELINES:
 - Each insight should be specific and data-driven (include actual numbers)
 - Highlight trends, comparisons, anomalies, or recommendations
-- Limit to 3-5 key insights
+- Limit to 3-4 key insights
 - Make insights actionable where possible
+- CRITICAL: Keep each insight under 120 characters for voice synthesis compatibility
+- Total combined length of all insights must not exceed 450 characters
+- IMPORTANT: Do NOT end each insight with a period (.), as they will be joined with ". " separator for voice synthesis
 
 FINAL INSTRUCTION
+
+Before returning, verify:
+1. ✓ Every panel has a UNIQUE (processStep, segment, detailLevel) coordinate
+2. ✓ No two panels share the exact same semantic coordinates
+3. ✓ Sibling panels use different processStep OR segment values
+4. ✓ All required fields present (parentId, processLabel, segmentLabel where needed)
 
 Return ONLY the JSON object.
 No markdown.
