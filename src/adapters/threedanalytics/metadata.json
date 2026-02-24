@@ -1,128 +1,742 @@
 [
   {
     "id": "dashboard",
-    "api": "/api/platforms/3danalytics/charts/dashboard"
+    "api": "/api/platforms/3danalytics/charts/dashboard",
+    "category": "executive",
+    "segment": "all",
+    "granularity": "overview",
+    "intent_keywords": [
+      "summary",
+      "overview",
+      "kpis",
+      "executive report",
+      "company performance"
+    ],
+    "description": "Executive summary API returning cross-functional KPIs across marketing, sales, revenue, and retention. Use when a high-level business performance snapshot is required.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "dashboard",
+        "title": "SaaS Dashboard",
+        "chartType": "kpi",
+        "size": {
+          "width": 4,
+          "height": 2.5
+        },
+        "data": [
+          {
+            "label": "Marketing Spend",
+            "value": 285000,
+            "unit": "$",
+            "trend": 15.2,
+            "trendDirection": "up"
+          },
+          {
+            "label": "Leads Generated",
+            "value": 8200,
+            "unit": "",
+            "trend": 12.8,
+            "trendDirection": "up"
+          },
+          {
+            "label": "Pipeline Values--",
+            "value": 1450000,
+            "unit": "$",
+            "trend": 8.7,
+            "trendDirection": "up"
+          },
+          {
+            "label": "Closed Revenue",
+            "value": 620000,
+            "unit": "$",
+            "trend": 5.4,
+            "trendDirection": "up"
+          },
+          {
+            "label": "Retention Rate",
+            "value": 95.5,
+            "unit": "%",
+            "trend": -0.3,
+            "trendDirection": "down"
+          }
+        ],
+        "semantic": {
+          "processStep": 2,
+          "segment": null,
+          "detailLevel": 0
+        },
+        "processLabel": "Overview"
+      }
+    }
   },
   {
     "id": "marketing",
-    "api": "/api/platforms/3danalytics/charts/marketing"
+    "api": "/api/platforms/3danalytics/charts/marketing",
+    "category": "marketing",
+    "segment": "all",
+    "granularity": "overview",
+    "intent_keywords": [
+      "campaign performance",
+      "marketing metrics",
+      "acquisition",
+      "traffic",
+      "conversion"
+    ],
+    "description": "Returns aggregated marketing performance metrics across all segments. Ideal for campaign effectiveness and acquisition analysis.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "marketing",
+        "title": "Marketing Spend",
+        "chartType": "bar",
+        "size": {
+          "width": 3,
+          "height": 2
+        },
+        "data": [
+          {
+            "product": "Startup",
+            "revenue": 138368,
+            "growth": 18.8
+          },
+          {
+            "product": "SMB",
+            "revenue": 280988,
+            "growth": 21.4
+          },
+          {
+            "product": "Enterprise",
+            "revenue": 572175,
+            "growth": 20.5
+          }
+        ],
+        "semantic": {
+          "processStep": 0,
+          "segment": null,
+          "detailLevel": 1
+        },
+        "parentId": "dashboard",
+        "processLabel": "Marketing"
+      }
+    }
   },
   {
     "id": "leads",
-    "api": "/api/platforms/3danalytics/charts/leads"
+    "api": "/api/platforms/3danalytics/charts/leads",
+    "category": "sales",
+    "segment": "all",
+    "granularity": "overview",
+    "intent_keywords": [
+      "lead generation",
+      "lead volume",
+      "prospects",
+      "inbound leads"
+    ],
+    "description": "Provides total lead generation metrics across the organization. Use when analyzing lead growth and top-of-funnel health.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "leads",
+        "title": "Leads Generated",
+        "chartType": "bar",
+        "size": {
+          "width": 3,
+          "height": 2
+        },
+        "data": [
+          {
+            "product": "Startup",
+            "revenue": 26000,
+            "growth": 9
+          },
+          {
+            "product": "SMB",
+            "revenue": 18200,
+            "growth": 19.9
+          },
+          {
+            "product": "Enterprise",
+            "revenue": 7800,
+            "growth": 19.9
+          }
+        ],
+        "semantic": {
+          "processStep": 1,
+          "segment": null,
+          "detailLevel": 1
+        },
+        "parentId": "dashboard",
+        "processLabel": "Leads"
+      }
+    }
   },
   {
     "id": "pipeline",
-    "api": "/api/platforms/3danalytics/charts/pipeline"
+    "api": "/api/platforms/3danalytics/charts/pipeline",
+    "category": "sales",
+    "segment": "all",
+    "granularity": "overview",
+    "intent_keywords": [
+      "sales pipeline",
+      "deal flow",
+      "forecasting",
+      "opportunities"
+    ],
+    "description": "Aggregated sales pipeline analytics showing deal progression and forecasting indicators.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "pipeline",
+        "title": "Pipeline Value",
+        "chartType": "bar",
+        "size": {
+          "width": 3,
+          "height": 2
+        },
+        "data": [
+          {
+            "product": "Startup",
+            "revenue": 56873,
+            "growth": 133.1
+          },
+          {
+            "product": "SMB",
+            "revenue": 85948,
+            "growth": 130.2
+          },
+          {
+            "product": "Enterprise",
+            "revenue": 141801,
+            "growth": 134.4
+          }
+        ],
+        "semantic": {
+          "processStep": 2,
+          "segment": null,
+          "detailLevel": 1
+        },
+        "parentId": "dashboard",
+        "processLabel": "Pipeline"
+      }
+    }
   },
   {
     "id": "revenue",
-    "api": "/api/platforms/3danalytics/charts/revenue"
+    "api": "/api/platforms/3danalytics/charts/revenue",
+    "category": "finance",
+    "segment": "all",
+    "granularity": "overview",
+    "intent_keywords": [
+      "revenue growth",
+      "income",
+      "financial performance",
+      "arr",
+      "mrr"
+    ],
+    "description": "Returns total revenue metrics across all segments. Use for financial reporting and revenue growth analysis.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "revenue",
+        "title": "Closed Revenue",
+        "chartType": "bar",
+        "size": {
+          "width": 3,
+          "height": 2
+        },
+        "data": [
+          {
+            "product": "Startup",
+            "revenue": 71259,
+            "growth": 9.8
+          },
+          {
+            "product": "SMB",
+            "revenue": 99674,
+            "growth": 8.3
+          },
+          {
+            "product": "Enterprise",
+            "revenue": 114070,
+            "growth": 7.9
+          }
+        ],
+        "semantic": {
+          "processStep": 3,
+          "segment": null,
+          "detailLevel": 1
+        },
+        "parentId": "dashboard",
+        "processLabel": "Revenue"
+      }
+    }
   },
   {
     "id": "retention",
-    "api": "/api/platforms/3danalytics/charts/retention"
+    "api": "/api/platforms/3danalytics/charts/retention",
+    "category": "retention",
+    "segment": "all",
+    "granularity": "overview",
+    "intent_keywords": [
+      "churn",
+      "customer retention",
+      "renewals",
+      "customer loyalty"
+    ],
+    "description": "Provides organization-wide retention and churn analytics. Ideal for customer health monitoring.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "retention",
+        "title": "Retention & Churn",
+        "chartType": "bar",
+        "size": {
+          "width": 3,
+          "height": 2
+        },
+        "data": [
+          {
+            "product": "Startup",
+            "revenue": 5.55,
+            "growth": -3.2
+          },
+          {
+            "product": "SMB",
+            "revenue": 3.74,
+            "growth": -1.5
+          },
+          {
+            "product": "Enterprise",
+            "revenue": 2.8,
+            "growth": -0.2
+          }
+        ],
+        "semantic": {
+          "processStep": 4,
+          "segment": null,
+          "detailLevel": 1
+        },
+        "parentId": "dashboard",
+        "processLabel": "Retention"
+      }
+    }
   },
-
   {
     "id": "marketing-startup",
-    "api": "/api/platforms/3danalytics/charts/marketing-startup"
+    "api": "/api/platforms/3danalytics/charts/marketing-startup",
+    "category": "marketing",
+    "segment": "startup",
+    "granularity": "segment",
+    "intent_keywords": [
+      "startup acquisition",
+      "early stage marketing",
+      "startup campaigns"
+    ],
+    "description": "Marketing performance metrics filtered for startup customers.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "marketing-startup",
+        "title": "Startup Marketing",
+        "chartType": "bar",
+        "size": {
+          "width": 3,
+          "height": 2
+        },
+        "data": [
+          {
+            "product": "Starter",
+            "revenue": 18664,
+            "growth": 12.9
+          },
+          {
+            "product": "Professional",
+            "revenue": 46044,
+            "growth": 20.2
+          },
+          {
+            "product": "Enterprise",
+            "revenue": 60570,
+            "growth": 9.6
+          },
+          {
+            "product": "Add-ons",
+            "revenue": 13090,
+            "growth": 32.4
+          }
+        ],
+        "semantic": {
+          "processStep": 0,
+          "segment": 0,
+          "detailLevel": 2
+        },
+        "parentId": "marketing",
+        "segmentLabel": "Startup",
+        "processLabel": "Marketing"
+      }
+    }
   },
   {
     "id": "leads-startup",
-    "api": "/api/platforms/3danalytics/charts/leads-startup"
+    "api": "/api/platforms/3danalytics/charts/leads-startup",
+    "category": "sales",
+    "segment": "startup",
+    "granularity": "segment",
+    "intent_keywords": [
+      "startup leads",
+      "early stage prospects"
+    ],
+    "description": "Lead generation analytics for startup segment.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "leads-startup",
+        "title": "Startup Leads",
+        "chartType": "funnel",
+        "size": {
+          "width": 2.5,
+          "height": 2.5
+        },
+        "data": [
+          {
+            "stage": "Website Visitors",
+            "count": 26000,
+            "conversionRate": 100
+          },
+          {
+            "stage": "Sign-ups",
+            "count": 4100,
+            "conversionRate": 15.8
+          },
+          {
+            "stage": "Trial Started",
+            "count": 2050,
+            "conversionRate": 50
+          },
+          {
+            "stage": "Paid Conversion",
+            "count": 615,
+            "conversionRate": 30
+          },
+          {
+            "stage": "Enterprise",
+            "count": 93,
+            "conversionRate": 15
+          }
+        ],
+        "semantic": {
+          "processStep": 1,
+          "segment": 0,
+          "detailLevel": 2
+        },
+        "parentId": "leads",
+        "segmentLabel": "Startup",
+        "processLabel": "Leads"
+      }
+    }
   },
   {
     "id": "pipeline-startup",
-    "api": "/api/platforms/3danalytics/charts/pipeline-startup"
+    "api": "/api/platforms/3danalytics/charts/pipeline-startup",
+    "category": "sales",
+    "segment": "startup",
+    "granularity": "segment",
+    "intent_keywords": [
+      "startup pipeline",
+      "early deals"
+    ],
+    "description": "Sales pipeline metrics for startup accounts.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "pipeline-startup",
+        "title": "Startup Pipeline",
+        "chartType": "revenue",
+        "size": {
+          "width": 3,
+          "height": 2
+        },
+        "data": [
+          {
+            "month": "Jan",
+            "mrr": 24403,
+            "arr": 292836,
+            "newRevenue": 3732,
+            "churnedRevenue": 1729
+          },
+          {
+            "month": "Feb",
+            "mrr": 26617,
+            "arr": 319404,
+            "newRevenue": 3092,
+            "churnedRevenue": 1489
+          },
+          {
+            "month": "Mar",
+            "mrr": 30102,
+            "arr": 361224,
+            "newRevenue": 2770,
+            "churnedRevenue": 2324
+          },
+          {
+            "month": "Apr",
+            "mrr": 33190,
+            "arr": 398280,
+            "newRevenue": 4856,
+            "churnedRevenue": 757
+          },
+          {
+            "month": "May",
+            "mrr": 35951,
+            "arr": 431412,
+            "newRevenue": 3902,
+            "churnedRevenue": 847
+          },
+          {
+            "month": "Jun",
+            "mrr": 39784,
+            "arr": 477408,
+            "newRevenue": 2080,
+            "churnedRevenue": 817
+          },
+          {
+            "month": "Jul",
+            "mrr": 42932,
+            "arr": 515184,
+            "newRevenue": 2067,
+            "churnedRevenue": 1773
+          },
+          {
+            "month": "Aug",
+            "mrr": 45339,
+            "arr": 544068,
+            "newRevenue": 4418,
+            "churnedRevenue": 1791
+          },
+          {
+            "month": "Sep",
+            "mrr": 48483,
+            "arr": 581796,
+            "newRevenue": 3047,
+            "churnedRevenue": 1907
+          },
+          {
+            "month": "Oct",
+            "mrr": 50540,
+            "arr": 606480,
+            "newRevenue": 3816,
+            "churnedRevenue": 956
+          },
+          {
+            "month": "Nov",
+            "mrr": 53626,
+            "arr": 643512,
+            "newRevenue": 2011,
+            "churnedRevenue": 1878
+          },
+          {
+            "month": "Dec",
+            "mrr": 56873,
+            "arr": 682476,
+            "newRevenue": 1830,
+            "churnedRevenue": 1937
+          }
+        ],
+        "semantic": {
+          "processStep": 2,
+          "segment": 0,
+          "detailLevel": 2
+        },
+        "parentId": "pipeline",
+        "segmentLabel": "Startup",
+        "processLabel": "Pipeline"
+      }
+    }
   },
   {
     "id": "revenue-startup",
-    "api": "/api/platforms/3danalytics/charts/revenue-startup"
+    "api": "/api/platforms/3danalytics/charts/revenue-startup",
+    "category": "finance",
+    "segment": "startup",
+    "granularity": "segment",
+    "intent_keywords": [
+      "startup revenue",
+      "early customer revenue"
+    ],
+    "description": "Revenue performance specific to startup customers.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "revenue-startup",
+        "title": "Startup Revenue",
+        "chartType": "kpi",
+        "size": {
+          "width": 3.5,
+          "height": 2
+        },
+        "data": [
+          {
+            "label": "Total Customers",
+            "value": 1166,
+            "unit": "",
+            "trend": 11.4,
+            "trendDirection": "up"
+          },
+          {
+            "label": "MRR",
+            "value": 71259,
+            "unit": "$",
+            "trend": 9.8,
+            "trendDirection": "up"
+          },
+          {
+            "label": "ARPU",
+            "value": -44,
+            "unit": "$",
+            "trend": -3.2,
+            "trendDirection": "down"
+          },
+          {
+            "label": "LTV",
+            "value": 626,
+            "unit": "$",
+            "trend": 7.2,
+            "trendDirection": "up"
+          },
+          {
+            "label": "NPS",
+            "value": -21,
+            "unit": "",
+            "trend": -0.3,
+            "trendDirection": "flat"
+          }
+        ],
+        "semantic": {
+          "processStep": 3,
+          "segment": 0,
+          "detailLevel": 2
+        },
+        "parentId": "revenue",
+        "segmentLabel": "Startup",
+        "processLabel": "Revenue"
+      }
+    }
   },
   {
     "id": "retention-startup",
-    "api": "/api/platforms/3danalytics/charts/retention-startup"
-  },
-
-  {
-    "id": "marketing-smb",
-    "api": "/api/platforms/3danalytics/charts/marketing-smb"
-  },
-  {
-    "id": "leads-smb",
-    "api": "/api/platforms/3danalytics/charts/leads-smb"
-  },
-  {
-    "id": "pipeline-smb",
-    "api": "/api/platforms/3danalytics/charts/pipeline-smb"
-  },
-  {
-    "id": "revenue-smb",
-    "api": "/api/platforms/3danalytics/charts/revenue-smb"
-  },
-  {
-    "id": "retention-smb",
-    "api": "/api/platforms/3danalytics/charts/retention-smb"
-  },
-
-  {
-    "id": "marketing-enterprise",
-    "api": "/api/platforms/3danalytics/charts/marketing-enterprise"
-  },
-  {
-    "id": "leads-enterprise",
-    "api": "/api/platforms/3danalytics/charts/leads-enterprise"
-  },
-  {
-    "id": "pipeline-enterprise",
-    "api": "/api/platforms/3danalytics/charts/pipeline-enterprise"
-  },
-  {
-    "id": "revenue-enterprise",
-    "api": "/api/platforms/3danalytics/charts/revenue-enterprise"
-  },
-  {
-    "id": "retention-enterprise",
-    "api": "/api/platforms/3danalytics/charts/retention-enterprise"
-  },
-
-  {
-    "id": "leads-startup-source",
-    "api": "/api/platforms/3danalytics/charts/leads-startup-source"
-  },
-  {
-    "id": "leads-smb-source",
-    "api": "/api/platforms/3danalytics/charts/leads-smb-source"
-  },
-  {
-    "id": "leads-enterprise-source",
-    "api": "/api/platforms/3danalytics/charts/leads-enterprise-source"
-  },
-
-  {
-    "id": "pipeline-startup-stage",
-    "api": "/api/platforms/3danalytics/charts/pipeline-startup-stage"
-  },
-  {
-    "id": "pipeline-smb-stage",
-    "api": "/api/platforms/3danalytics/charts/pipeline-smb-stage"
-  },
-  {
-    "id": "pipeline-enterprise-stage",
-    "api": "/api/platforms/3danalytics/charts/pipeline-enterprise-stage"
-  },
-
-  {
-    "id": "revenue-startup-account",
-    "api": "/api/platforms/3danalytics/charts/revenue-startup-account"
-  },
-  {
-    "id": "revenue-smb-account",
-    "api": "/api/platforms/3danalytics/charts/revenue-smb-account"
-  },
-  {
-    "id": "revenue-enterprise-account",
-    "api": "/api/platforms/3danalytics/charts/revenue-enterprise-account"
+    "api": "/api/platforms/3danalytics/charts/retention-startup",
+    "category": "retention",
+    "segment": "startup",
+    "granularity": "segment",
+    "intent_keywords": [
+      "startup churn",
+      "early retention"
+    ],
+    "description": "Retention analytics for startup accounts.",
+    "response_sample": {
+      "success": true,
+      "platform": "3danalytics",
+      "data": {
+        "id": "retention-startup",
+        "title": "Startup Retention",
+        "chartType": "churn",
+        "size": {
+          "width": 3,
+          "height": 2
+        },
+        "data": [
+          {
+            "month": "Jan",
+            "churnRate": 7.43,
+            "customers": 1400,
+            "churned": 104
+          },
+          {
+            "month": "Feb",
+            "churnRate": 6.29,
+            "customers": 1490,
+            "churned": 94
+          },
+          {
+            "month": "Mar",
+            "churnRate": 6.98,
+            "customers": 1580,
+            "churned": 110
+          },
+          {
+            "month": "Apr",
+            "churnRate": 5.78,
+            "customers": 1670,
+            "churned": 97
+          },
+          {
+            "month": "May",
+            "churnRate": 5.37,
+            "customers": 1760,
+            "churned": 95
+          },
+          {
+            "month": "Jun",
+            "churnRate": 5.41,
+            "customers": 1850,
+            "churned": 100
+          },
+          {
+            "month": "Jul",
+            "churnRate": 5.09,
+            "customers": 1940,
+            "churned": 99
+          },
+          {
+            "month": "Aug",
+            "churnRate": 5.29,
+            "customers": 2030,
+            "churned": 107
+          },
+          {
+            "month": "Sep",
+            "churnRate": 4.52,
+            "customers": 2120,
+            "churned": 96
+          },
+          {
+            "month": "Oct",
+            "churnRate": 5.12,
+            "customers": 2210,
+            "churned": 113
+          },
+          {
+            "month": "Nov",
+            "churnRate": 5.08,
+            "customers": 2300,
+            "churned": 117
+          },
+          {
+            "month": "Dec",
+            "churnRate": 4.27,
+            "customers": 2390,
+            "churned": 102
+          }
+        ],
+        "semantic": {
+          "processStep": 4,
+          "segment": 0,
+          "detailLevel": 2
+        },
+        "parentId": "retention",
+        "segmentLabel": "Startup",
+        "processLabel": "Retention"
+      }
+    }
   }
 ]
