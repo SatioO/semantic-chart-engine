@@ -395,11 +395,6 @@ export function createPlatformsRouter(
         return;
       }
 
-      console.log(
-        `[UserQuery] Metadata for ${platformId}:`,
-        JSON.stringify(metadata, null, 2),
-      );
-
       // 2. Use LangChain service to identify relevant data sources
       const dataSourceSelection = await langChainService.identifyDataSources(query, metadata);
 

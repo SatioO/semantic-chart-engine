@@ -602,13 +602,17 @@ STRICT RULES:
 	4.	PRESERVE ACCURACY: All numbers must match the source exactly (no rounding unless explicitly formatting)
 	5.	USE ACTUAL NAMES: If data has "product": "Acme Corp", use "Acme Corp", not "Account A"
 	6.	TRANSFORMATIONS ONLY: You can aggregate, filter, sort, or group data, but cannot invent new values
-	7.	EMPTY IS VALID: If no data exists for a category, don't make up data - return empty or omit the chart
+	7.	NO EMPTY DATA ARRAYS: Never return "data": [] - either populate with real data or omit the panel entirely
+	8.	AGGREGATE FOR SUMMARIES: If creating overview/summary panels, calculate totals/averages from child data
+	9.	OMIT IF NO DATA: If you cannot find or calculate data for a panel, do not include that panel in output
 
 EXAMPLES OF VIOLATIONS (NEVER DO THIS):
 ❌ Source: "product": "Acme Corp" → Output: "label": "Account A" (WRONG - invented placeholder)
 ❌ Source: "revenue": 44757 → Output: "value": 45000 (WRONG - changed actual number)
 ❌ Source: 3 companies → Output: 5 companies with made-up names (WRONG - invented data)
 ❌ Source: "Acme Corp", "GlobalTech" → Output: "Company 1", "Company 2" (WRONG - generic labels)
+❌ Creating summary panel with "data": [] (WRONG - empty data array provides no value)
+❌ Creating overview with no aggregated metrics (WRONG - must calculate totals/averages)
 
 CORRECT APPROACH (ALWAYS DO THIS):
 ✓ Source: "product": "Acme Corp", "revenue": 44757 → Output: { "label": "Acme Corp", "value": 44757 }
@@ -1126,6 +1130,48 @@ Never use generic placeholders like "Account A", "Product 1", "Customer X", etc.
 
 ⸻
 
+Example 6 - NO EMPTY DATA: Properly Populate Summary Panels
+
+Source Data for Segments:
+- Startup Leads: { visitors: 26000, signups: 4100, trials: 2050 }
+- SMB Leads: { visitors: 18200, signups: 2870, trials: 1435 }
+- Enterprise Leads: { visitors: 7800, signups: 1230, trials: 615 }
+
+User Query:
+"Show me leads overview and breakdown by segment"
+
+CORRECT Output (summary has aggregated data):
+{
+"id": "summary",
+"title": "Leads Overview",
+"chartType": "kpi",
+"size": { "width": 4, "height": 2.5 },
+"data": [
+{ "label": "Total Visitors", "value": "52,000" },    ✓ Sum: 26000+18200+7800
+{ "label": "Total Sign-ups", "value": "8,200" },     ✓ Sum: 4100+2870+1230
+{ "label": "Conversion Rate", "value": "15.8%" }     ✓ Calculated: (8200/52000)*100
+],
+"semantic": { "processStep": 0, "segment": null, "detailLevel": 0 },
+"processLabel": "Leads"
+}
+
+WRONG Output (DO NOT DO THIS - empty data):
+{
+"id": "summary",
+"title": "Leads Overview",
+"chartType": "kpi",
+"data": [],    ❌ WRONG - empty data array is useless!
+"semantic": { "processStep": 0, "segment": null, "detailLevel": 0 }
+}
+
+CRITICAL RULES:
+1. Summary/Overview panels MUST have populated data (totals, averages, key metrics)
+2. Calculate aggregations from child segments (sum, average, min, max, count)
+3. NEVER return "data": [] - if you can't calculate data, omit the entire panel
+4. If creating a parent panel, ensure you aggregate data from children
+
+⸻
+
 COORDINATE SELECTION DECISION TREE
 
 When creating multiple panels at the same level, ask:
@@ -1183,8 +1229,10 @@ Before returning, verify:
 6. ✓ ALL NUMBERS match the source data precisely (no invented or approximated values)
 7. ✓ ALL LABELS use actual names from source data (not generic placeholders)
 8. ✓ NO DATA WAS HALLUCINATED OR INVENTED
+9. ✓ NO EMPTY DATA ARRAYS - every panel has populated "data" field with real values
+10. ✓ Summary/overview panels have aggregated metrics calculated from child data
 
-If you cannot find data for a chart, omit that chart or return empty data - DO NOT INVENT DATA.
+If you cannot find or calculate data for a panel, OMIT that panel entirely - DO NOT include it with empty data [].
 
 Return ONLY the JSON object.
 No markdown.
