@@ -200,14 +200,29 @@ export class SinglePassExecutor implements IExecutor {
     };
 
     try {
-      const charts = await this.chartService.getCharts(
-        state.platformId,
-        dataSources.map((ds) => ds.id),
+      // Fetch chart data for each data source
+      const dataPromises = dataSources.map((dataSource: any) =>
+        this.chartService
+          .getChartDataEssentials(state.platformId, dataSource.id)
+          .then((chartData: any) => ({
+            ...dataSource,
+            chartData,
+            success: chartData !== null,
+          }))
+          .catch((error: any) => ({
+            ...dataSource,
+            chartData: null,
+            success: false,
+            error: error.message,
+          })),
       );
 
-      step.output = { charts, count: charts.length };
+      const charts = await Promise.all(dataPromises);
+      const successfulCharts = charts.filter((c) => c.success);
+
+      step.output = { charts: successfulCharts, count: successfulCharts.length } as any;
       step.evaluation = {
-        success: true,
+        success: successfulCharts.length > 0,
         confidence: 0.9,
         issues: [],
         corrections: [],
@@ -222,12 +237,12 @@ export class SinglePassExecutor implements IExecutor {
         step: state.steps.length,
         thought: `Need to fetch data from ${dataSources.length} data sources`,
         action: 'Fetch chart data from APIs',
-        observation: `Retrieved ${charts.length} chart objects`,
-        evaluation: 'Data fetched successfully',
+        observation: `Retrieved ${successfulCharts.length}/${charts.length} chart objects with data`,
+        evaluation: successfulCharts.length > 0 ? 'Data fetched successfully' : 'No data retrieved',
         timestamp: new Date(),
       });
 
-      return charts;
+      return successfulCharts;
     } catch (error: any) {
       step.output = { error: error.message };
       step.evaluation.issues.push({

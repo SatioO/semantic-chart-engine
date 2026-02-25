@@ -546,13 +546,26 @@ Panel Address = (processStep, segment, detailLevel)
 ⸻
 
 GLOBAL RULES
-	1.	The FIRST object in the array MUST:
+	1.	**UNIQUE ID REQUIREMENT (ABSOLUTELY CRITICAL)**:
+	•	Every panel MUST have a unique "id" field (string)
+	•	NO TWO PANELS can share the same id
+	•	ID FORMAT: descriptive-kebab-case + 8-character UUID suffix
+	•	Pattern: "{description}-{uuid8}" (e.g., "revenue-overview-a7f3b2d1", "startup-pipeline-5c8e9f12")
+	•	Generate IDs based on: processLabel + segmentLabel + detailLevel, then append random 8-char UUID
+	•	UUID suffix uses lowercase letters and numbers only (a-z, 0-9)
+	•	Example ID patterns:
+	   - Overview: "summary-a7f3b2d1", "overview-5c8e9f12", "dashboard-d4a1c6b9"
+	   - Process-based: "pipeline-segment-2f9a8e3c", "revenue-segment-b1d7c4a6", "marketing-startup-3e7c9a2f"
+	   - Detail: "pipeline-startup-stage-8f2d3a5e", "revenue-smb-account-c9a4e1b7"
+	•	NEVER reuse an ID - the UUID suffix ensures each panel has a distinct identifier
+	•	Descriptive prefix provides readability, UUID suffix guarantees uniqueness
+	2.	The FIRST object in the array MUST:
 	•	Be the global summary
 	•	Have detailLevel = 0
 	•	Have segment = null
 	•	Represent the overall interpretation of the user query
 	•	Contain KPI-style aggregated metrics
-	2.	Horizontal (X) Rules:
+	3.	Horizontal (X) Rules:
 	•	Sequential / causal stages must increase processStep
 	•	Different metrics at the same level = different processStep values
 	•	Example: Pipeline (processStep: 0), Revenue (processStep: 1), Churn (processStep: 2)
@@ -869,7 +882,7 @@ Expected Output:
 {
 "data": [
 {
-"id": "overview",
+"id": "revenue-overview-a7f3b2d1",
 "title": "Revenue Overview",
 "chartType": "kpi",
 "size": { "width": 4, "height": 2.5 },
@@ -881,7 +894,7 @@ Expected Output:
 "processLabel": "Revenue"
 },
 {
-"id": "revenue-segment",
+"id": "revenue-segment-5c8e9f12",
 "title": "Revenue by Segment",
 "chartType": "bar",
 "size": { "width": 3, "height": 2 },
@@ -891,7 +904,7 @@ Expected Output:
 { "product": "Enterprise", "revenue": 480000, "growth": 6 }
 ],
 "semantic": { "processStep": 0, "segment": null, "detailLevel": 1 },
-"parentId": "overview",
+"parentId": "revenue-overview-a7f3b2d1",
 "processLabel": "Revenue"
 }
 ],
@@ -918,7 +931,7 @@ Expected Output:
 
 [
 {
-"id": "summary",
+"id": "engine-overview-d4a1c6b9",
 "title": "Revenue Engine Overview",
 "chartType": "kpi",
 "size": { "width": 4, "height": 2.5 },
@@ -930,7 +943,7 @@ Expected Output:
 "processLabel": "Revenue Engine"
 },
 {
-"id": "pipeline-segment",
+"id": "pipeline-segment-2f9a8e3c",
 "title": "Pipeline by Segment",
 "chartType": "bar",
 "size": { "width": 3, "height": 2 },
@@ -940,11 +953,11 @@ Expected Output:
 { "product": "Enterprise", "revenue": 141801 }
 ],
 "semantic": { "processStep": 0, "segment": null, "detailLevel": 1 },
-"parentId": "summary",
+"parentId": "engine-overview-d4a1c6b9",
 "processLabel": "Pipeline"
 },
 {
-"id": "revenue-segment",
+"id": "revenue-segment-b1d7c4a6",
 "title": "Revenue by Segment",
 "chartType": "bar",
 "size": { "width": 3, "height": 2 },
@@ -954,7 +967,7 @@ Expected Output:
 { "product": "Enterprise", "revenue": 114070 }
 ],
 "semantic": { "processStep": 1, "segment": null, "detailLevel": 1 },
-"parentId": "summary",
+"parentId": "engine-overview-d4a1c6b9",
 "processLabel": "Revenue"
 }
 ]
@@ -1102,7 +1115,7 @@ User Query:
 
 CORRECT Output (uses exact data):
 {
-"id": "top-accounts",
+"id": "top-accounts-3e7c9a2f",
 "title": "Top Accounts by Revenue",
 "chartType": "bar",
 "size": { "width": 3, "height": 2 },
@@ -1142,7 +1155,7 @@ User Query:
 
 CORRECT Output (summary has aggregated data):
 {
-"id": "summary",
+"id": "leads-overview-8f2d3a5e",
 "title": "Leads Overview",
 "chartType": "kpi",
 "size": { "width": 4, "height": 2.5 },
@@ -1157,7 +1170,7 @@ CORRECT Output (summary has aggregated data):
 
 WRONG Output (DO NOT DO THIS - empty data):
 {
-"id": "summary",
+"id": "leads-overview-wrongid1",
 "title": "Leads Overview",
 "chartType": "kpi",
 "data": [],    ❌ WRONG - empty data array is useless!
@@ -1221,16 +1234,18 @@ INSIGHT GUIDELINES:
 FINAL INSTRUCTION
 
 Before returning, verify:
-1. ✓ Every panel has a UNIQUE (processStep, segment, detailLevel) coordinate
-2. ✓ No two panels share the exact same semantic coordinates
-3. ✓ Sibling panels use different processStep OR segment values
-4. ✓ All required fields present (parentId, processLabel, segmentLabel where needed)
-5. ✓ ALL DATA VALUES are copied exactly from the source (no "Account A", "Product 1", etc.)
-6. ✓ ALL NUMBERS match the source data precisely (no invented or approximated values)
-7. ✓ ALL LABELS use actual names from source data (not generic placeholders)
-8. ✓ NO DATA WAS HALLUCINATED OR INVENTED
-9. ✓ NO EMPTY DATA ARRAYS - every panel has populated "data" field with real values
-10. ✓ Summary/overview panels have aggregated metrics calculated from child data
+1. ✓ Every panel has a UNIQUE "id" field in format "{description}-{uuid8}" (e.g., "revenue-overview-a7f3b2d1")
+2. ✓ No duplicate IDs exist - UUID suffix ensures all IDs are unique across all panels
+3. ✓ Every panel has a UNIQUE (processStep, segment, detailLevel) coordinate
+4. ✓ No two panels share the exact same semantic coordinates
+5. ✓ Sibling panels use different processStep OR segment values
+6. ✓ All required fields present (id, parentId, processLabel, segmentLabel where needed)
+7. ✓ ALL DATA VALUES are copied exactly from the source (no "Account A", "Product 1", etc.)
+8. ✓ ALL NUMBERS match the source data precisely (no invented or approximated values)
+9. ✓ ALL LABELS use actual names from source data (not generic placeholders)
+10. ✓ NO DATA WAS HALLUCINATED OR INVENTED
+11. ✓ NO EMPTY DATA ARRAYS - every panel has populated "data" field with real values
+12. ✓ Summary/overview panels have aggregated metrics calculated from child data
 
 If you cannot find or calculate data for a panel, OMIT that panel entirely - DO NOT include it with empty data [].
 
