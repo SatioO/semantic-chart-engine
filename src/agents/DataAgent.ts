@@ -9,6 +9,7 @@ import { DataSourceTool } from './tools/DataSourceTool';
 import { VisualizationTool } from './tools/VisualizationTool';
 import { DataValidationTool } from './tools/DataValidationTool';
 import { SinglePassExecutor } from './executors/SinglePassExecutor';
+import { ReActExecutor } from './executors/ReActExecutor';
 import { IExecutor } from './executors/IExecutor';
 import {
   AgentConfig,
@@ -197,23 +198,19 @@ export class DataAgent {
     complexity: QueryComplexity,
     config: AgentConfig,
   ): IExecutor {
-    // For now, always use SinglePassExecutor for stability
-    // Future: Add MultiStepExecutor and ReasoningExecutor
-    return new SinglePassExecutor(
-      this.dataSourceTool,
-      this.visualizationTool,
-      this.dataValidationTool,
-      this.chartService,
-    );
+    // Use SinglePassExecutor for simple queries or when self-correction is disabled
+    if (complexity === 'simple' || !config.enableSelfCorrection) {
+      return new SinglePassExecutor(
+        this.dataSourceTool,
+        this.visualizationTool,
+        this.dataValidationTool,
+        this.chartService,
+      );
+    }
 
-    // Future implementation:
-    // if (complexity === 'simple' || !config.enableSelfCorrection) {
-    //   return new SinglePassExecutor(...);
-    // } else if (complexity === 'medium' || complexity === 'complex') {
-    //   return new MultiStepExecutor(...);
-    // } else {
-    //   return new ReasoningExecutor(...);
-    // }
+    // Use ReActExecutor for complex queries with full reasoning and self-correction
+    // ReAct provides transparent thinking process and better decision making
+    return new ReActExecutor(this.langChain, this.chartService);
   }
 
   /**
