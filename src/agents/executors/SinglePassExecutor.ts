@@ -30,11 +30,13 @@ export class SinglePassExecutor implements IExecutor {
     try {
       state.status = 'planning';
 
-      if (state.config.verboseLogging) {
-        console.log(
-          `[SinglePassExecutor] Starting execution for: "${state.query}"`,
-        );
-      }
+      console.log('\n╔══════════════════════════════════════════════════════════════╗');
+      console.log('║      🔧 SINGLE PASS EXECUTOR - LINEAR EXECUTION MODE        ║');
+      console.log('╚══════════════════════════════════════════════════════════════╝');
+      console.log(`📝 Query: "${state.query}"`);
+      console.log(`🎯 Platform: ${state.platformId}`);
+      console.log('📋 Flow: Identify → Fetch → Validate → Visualize');
+      console.log('');
 
       // Step 1: Identify relevant data sources
       state.status = 'executing';

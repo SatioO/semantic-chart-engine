@@ -4,6 +4,7 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 
 import { LangChainService } from './services/LangChainService';
+import { AgentService } from './services/AgentService';
 import { registry } from './adapters/AdapterRegistry';
 import { ChartService } from './services/ChartService';
 import { createPlatformsRouter } from './routes/platforms.routes';
@@ -20,6 +21,12 @@ app.use(express.json());
 // ── Dependency wiring ───────────────────────────────────────────────────────
 const chartService = new ChartService(registry);
 const langChainService = new LangChainService();
+const agentService = new AgentService(langChainService, chartService);
+
+console.log('✅ Services initialized:');
+console.log('   - ChartService');
+console.log('   - LangChainService');
+console.log('   - AgentService (with ReAct executor)');
 
 // ── Swagger UI ──────────────────────────────────────────────────────────────
 app.use(
@@ -97,7 +104,7 @@ app.get('/', (_req: Request, res: Response) => {
 
 app.use(
   '/api/platforms',
-  createPlatformsRouter(chartService, langChainService),
+  createPlatformsRouter(chartService, langChainService, agentService),
 );
 app.use('/api/platforms/:platformId/charts', createChartsRouter(chartService));
 

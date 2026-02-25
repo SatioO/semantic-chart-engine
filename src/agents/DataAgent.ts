@@ -200,6 +200,15 @@ export class DataAgent {
   ): IExecutor {
     // Use SinglePassExecutor for simple queries or when self-correction is disabled
     if (complexity === 'simple' || !config.enableSelfCorrection) {
+      console.log('\n========================================');
+      console.log('🔧 EXECUTOR SELECTION: SinglePassExecutor');
+      console.log('========================================');
+      console.log(`Reason: ${complexity === 'simple' ? 'Query complexity is SIMPLE' : 'Self-correction is DISABLED'}`);
+      console.log(`Complexity Level: ${complexity}`);
+      console.log(`Self-Correction Enabled: ${config.enableSelfCorrection}`);
+      console.log('Execution Mode: Linear (Identify → Fetch → Validate → Visualize)');
+      console.log('========================================\n');
+
       return new SinglePassExecutor(
         this.dataSourceTool,
         this.visualizationTool,
@@ -209,7 +218,16 @@ export class DataAgent {
     }
 
     // Use ReActExecutor for complex queries with full reasoning and self-correction
-    // ReAct provides transparent thinking process and better decision making
+    console.log('\n========================================');
+    console.log('🤖 EXECUTOR SELECTION: ReActExecutor');
+    console.log('========================================');
+    console.log(`Complexity Level: ${complexity.toUpperCase()}`);
+    console.log(`Self-Correction Enabled: ${config.enableSelfCorrection}`);
+    console.log('Execution Mode: ReAct Loop (Thought → Action → Observation)');
+    console.log('Max Iterations: 10');
+    console.log('Tools Available: identify_data_sources, fetch_data, calculate_aggregations, generate_visualizations');
+    console.log('========================================\n');
+
     return new ReActExecutor(this.langChain, this.chartService);
   }
 

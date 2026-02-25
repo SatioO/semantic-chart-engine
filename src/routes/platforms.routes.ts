@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { ChartService } from '../services/ChartService';
 import { ILangChainService } from '../services/LangChainService';
+import { AgentService } from '../services/AgentService';
 import {
   ApiResponse,
   PlatformInfo,
@@ -13,6 +14,7 @@ import {
 export function createPlatformsRouter(
   chartService: ChartService,
   langChainService: ILangChainService,
+  agentService: AgentService,
 ): Router {
   const router = Router();
 
@@ -383,90 +385,49 @@ export function createPlatformsRouter(
     }
 
     try {
-      // 1. Retrieve metadata from the adapter
-      const metadata = await chartService.getPlatformMetadata(platformId);
+      console.log(`\n[UserQuery] Processing query for platform: ${platformId}`);
+      console.log(`[UserQuery] Query: "${query}"`);
 
-      if (!metadata) {
-        res.status(404).json({
-          success: false,
-          error: `Metadata for platform "${platformId}" not found.`,
-          statusCode: 404,
-        });
-        return;
-      }
-
-      // 2. Use LangChain service to identify relevant data sources
-      const dataSourceSelection = await langChainService.identifyDataSources(query, metadata);
-
-      console.log(
-        `[UserQuery] AI identified ${dataSourceSelection.relevantMetadata.length} relevant data sources:`,
-        dataSourceSelection.relevantMetadata.map((m: any) => m.id),
-      );
-
-      // 3. Fetch essential chart data (id, title, chartType, data) for all identified data sources
-      // Using getChartDataEssentials which excludes semantic metadata
-      const dataPromises = dataSourceSelection.relevantMetadata.map(
-        (dataSource: any) =>
-          chartService
-            .getChartDataEssentials(platformId, dataSource.id)
-            .then((chartData) => ({
-              ...dataSource,
-              chartData,
-              success: chartData !== null,
-            }))
-            .catch((error: any) => {
-              console.error(
-                `[UserQuery] Error fetching data for ${dataSource.id}:`,
-                error.message,
-              );
-              return {
-                ...dataSource,
-                chartData: null,
-                success: false,
-                error: error.message,
-              };
-            }),
-      );
-
-      const chartsWithData = await Promise.all(dataPromises);
-
-      // Filter out any failed fetches (optional - you can keep them to show errors)
-      const successfulCharts = chartsWithData.filter((c) => c.success);
-
-      console.log(
-        `[UserQuery] Successfully fetched ${successfulCharts.length}/${dataSourceSelection.relevantMetadata.length} charts`,
-      );
-
-      // 4. Use AI to orchestrate an intelligent visualization layout
-      console.log('[UserQuery] Orchestrating visualization layout with AI...');
-      const orchestration = await langChainService.orchestrateVisualization(
+      // Use the new AgentService with ReAct executor
+      // This will automatically select SinglePassExecutor or ReActExecutor based on query complexity
+      const result = await agentService.analyzeWithAgent(
         query,
-        successfulCharts,
+        platformId,
+        {
+          enableSelfCorrection: true,  // Enable ReAct for complex queries
+          enableLearning: true,         // Enable pattern learning
+          verboseLogging: true,         // Show detailed logs
+          maxIterations: 10,            // Max ReAct loop iterations
+        },
       );
 
-      console.log(
-        `[UserQuery] Generated ${orchestration.data.length} visualizations with ${orchestration.meta.keyInsights?.length || 0} insights`,
-      );
-      console.log(
-        '[UserQuery] Orchestration data:',
-        JSON.stringify(orchestration.data, null, 2),
-      );
+      console.log(`[UserQuery] Agent analysis complete`);
+      console.log(`  - Executor: ${result.iterations > 1 ? 'ReActExecutor' : 'SinglePassExecutor'}`);
+      console.log(`  - Iterations: ${result.iterations}`);
+      console.log(`  - Confidence: ${(result.confidence * 100).toFixed(1)}%`);
+      console.log(`  - Execution time: ${result.executionTime}ms`);
+      console.log(`  - Visualizations: ${result.visualizations.length}`);
 
-      // 5. Return the intelligent visualization structure
+      // Return the agent response in backward-compatible format
       res.json({
         success: true,
         platform: platformId,
         data: {
           query,
-          reasoning: dataSourceSelection.reasoning,
-          narrative: orchestration.meta.narrative,
-          data: orchestration.data,
-          keyInsights: orchestration.meta.keyInsights || [],
+          reasoning: result.reasoning,
+          narrative: result.finalAnswer,
+          data: result.visualizations,
+          keyInsights: result.meta.keyInsights || [],
           meta: {
-            total: chartsWithData.length,
-            successful: successfulCharts.length,
-            failed: chartsWithData.length - successfulCharts.length,
-            visualizationsGenerated: orchestration.data.length,
+            total: result.meta.total,
+            successful: result.meta.successful,
+            failed: result.meta.failed,
+            visualizationsGenerated: result.visualizations.length,
+            // Additional agent metadata
+            iterations: result.iterations,
+            confidence: result.confidence,
+            executionTime: result.executionTime,
+            reasoningTrace: result.reasoningTrace,
           },
         },
       });
